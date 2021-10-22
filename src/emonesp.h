@@ -31,6 +31,8 @@
 #include "profile.h"
 
 String getTime();
+String getDate();
+int getDateAsInt();
 
 void setTimeOffset();
 

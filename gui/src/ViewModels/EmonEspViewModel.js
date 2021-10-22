@@ -8,19 +8,19 @@ function EmonEspViewModel(baseHost, basePort, baseProtocol) {
 
   self.baseEndpoint = ko.pureComputed(function () {
     var endpoint = "//" + self.baseHost();
-    if(80 !== self.basePort()) {
-      endpoint += ":"+self.basePort();
+    if (80 !== self.basePort()) {
+      endpoint += ":" + self.basePort();
     }
     return endpoint;
   });
 
   self.wsEndpoint = ko.pureComputed(function () {
     var endpoint = "ws://" + self.baseHost();
-    if("https:" === self.baseProtocol()){
+    if ("https:" === self.baseProtocol()) {
       endpoint = "wss://" + self.baseHost();
     }
-    if(80 !== self.basePort()) {
-      endpoint += ":"+self.basePort();
+    if (80 !== self.basePort()) {
+      endpoint += ":" + self.basePort();
     }
     endpoint += "/ws";
     return endpoint;
@@ -42,7 +42,7 @@ function EmonEspViewModel(baseHost, basePort, baseProtocol) {
   self.updating = ko.observable(false);
 
   self.wifi.selectedNet.subscribe((net) => {
-    if(false !== net) {
+    if (false !== net) {
       self.config.ssid(net.ssid());
     }
   });
@@ -50,13 +50,13 @@ function EmonEspViewModel(baseHost, basePort, baseProtocol) {
   self.config.ssid.subscribe((ssid) => {
     self.wifi.setSsid(ssid);
   });
-    
+
   var updateTimer = null;
   var updateTime = 1 * 1000;
 
   var logUpdateTimer = null;
   var logUpdateTime = 500;
-    
+
   // Upgrade URL
   self.upgradeUrl = ko.observable("about:blank");
 
@@ -86,7 +86,7 @@ function EmonEspViewModel(baseHost, basePort, baseProtocol) {
     if (self.updating()) {
       return;
     }
-    self.updating(true);    
+    self.updating(true);
     if (null !== updateTimer) {
       clearTimeout(updateTimer);
       updateTimer = null;
@@ -101,7 +101,7 @@ function EmonEspViewModel(baseHost, basePort, baseProtocol) {
 
   self.wifiConnecting = ko.observable(false);
   self.status.mode.subscribe(function (newValue) {
-    if(newValue === "STA+AP" || newValue === "STA") {
+    if (newValue === "STA+AP" || newValue === "STA") {
       self.wifiConnecting(false);
     }
   });
@@ -118,13 +118,13 @@ function EmonEspViewModel(baseHost, basePort, baseProtocol) {
       self.saveNetworkFetching(true);
       self.saveNetworkSuccess(false);
       $.post(baseEndpoint + "/savenetwork", { ssid: self.config.ssid(), pass: self.config.pass() }, function (data) {
-          self.saveNetworkSuccess(true);
-          self.wifiConnecting(true);
-        }).fail(function () {
-          alert("Failed to save WiFi config");
-        }).always(function () {
-          self.saveNetworkFetching(false);
-        });
+        self.saveNetworkSuccess(true);
+        self.wifiConnecting(true);
+      }).fail(function () {
+        alert("Failed to save WiFi config");
+      }).always(function () {
+        self.saveNetworkFetching(false);
+      });
     }
   };
 
@@ -144,7 +144,7 @@ function EmonEspViewModel(baseHost, basePort, baseProtocol) {
       self.saveAdminFetching(false);
     });
   };
-  
+
   // -----------------------------------------------------------------------
   // Event: Timer save
   // -----------------------------------------------------------------------
@@ -153,39 +153,75 @@ function EmonEspViewModel(baseHost, basePort, baseProtocol) {
   self.saveTimer = function () {
     self.saveTimerFetching(true);
     self.saveTimerSuccess(false);
-    $.post(baseEndpoint + "/savetimer", { 
-      timer_start1: self.config.timer_start1(), 
-      timer_stop1: self.config.timer_stop1(), 
-      timer_start2: self.config.timer_start2(), 
+    $.post(baseEndpoint + "/savetimer", {
+      timer_start1: self.config.timer_start1(),
+      timer_stop1: self.config.timer_stop1(),
+      timer_start2: self.config.timer_start2(),
       timer_stop2: self.config.timer_stop2(),
+      standby_start: self.config.standby_start(),
+      standby_stop: self.config.standby_stop(),
       voltage_output: self.config.voltage_output(),
       time_offset: self.config.time_offset()
     }, function (data) {
       self.saveTimerSuccess(true);
-      setTimeout(function(){
-          self.saveTimerSuccess(false);
-      },5000);
+      setTimeout(function () {
+        self.saveTimerSuccess(false);
+      }, 5000);
     }).fail(function () {
       alert("Failed to save Timer config");
     }).always(function () {
       self.saveTimerFetching(false);
     });
   };
-  
+
   // -----------------------------------------------------------------------
   // Event: Switch On, Off, Timer
-  // -----------------------------------------------------------------------  
+  // -----------------------------------------------------------------------
   //self.btn_off = ko.observable(false);
   //self.btn_timer = ko.observable(false);
-  
+
   self.ctrlMode = function (mode) {
     var last = self.status.ctrl_mode();
     self.status.ctrl_mode(mode);
-    $.post(baseEndpoint + "/ctrlmode?mode="+mode,{}, function (data) {
+    $.post(baseEndpoint + "/ctrlmode?mode=" + mode, {}, function (data) {
       // success
     }).fail(function () {
       self.status.ctrl_mode(last);
-      alert("Failed to switch "+mode);
+      alert("Failed to switch " + mode);
+    });
+  };
+
+  // -----------------------------------------------------------------------
+  // Event: Switch On, Off, Standby
+  // -----------------------------------------------------------------------
+  //self.btn_off = ko.observable(false);
+  //self.btn_timer = ko.observable(false);
+
+  self.divertMode = function (mode) {
+    var last = self.status.divert_mode();
+    self.status.divert_mode(mode);
+    $.post(baseEndpoint + "/divertmode?mode=" + mode, {}, function (data) {
+      // success
+    }).fail(function () {
+      self.status.divert_mode(last);
+      alert("Failed to switch " + mode);
+    });
+  };
+
+  // -----------------------------------------------------------------------
+  // Event: Switch On, Off
+  // -----------------------------------------------------------------------
+  //self.btn_off = ko.observable(false);
+  //self.btn_timer = ko.observable(false);
+
+  self.rotationMode = function (mode) {
+    var last = self.config.rotation();
+    self.config.rotation(mode);
+    $.post(baseEndpoint + "/rotation?mode=" + mode, {}, function (data) {
+      // success
+    }).fail(function () {
+      self.config.rotation(last);
+      alert("Failed to switch " + mode);
     });
   };
 
@@ -255,62 +291,62 @@ function EmonEspViewModel(baseHost, basePort, baseProtocol) {
   };
 }
 
-  // -----------------------------------------------------------------------
-  // Event: Update
-  // -----------------------------------------------------------------------
+// -----------------------------------------------------------------------
+// Event: Update
+// -----------------------------------------------------------------------
 
-  // Support for OTA update of the OpenEVSE
-  self.updateFetching = ko.observable(false);
-  self.updateComplete = ko.observable(false);
-  self.updateError = ko.observable("");
-  self.updateFilename = ko.observable("");
-  self.updateLoaded = ko.observable(0);
-  self.updateTotal = ko.observable(1);
-  self.updateProgress = ko.pureComputed(function () {
-    return (self.updateLoaded() / self.updateTotal()) * 100;
-  });
+// Support for OTA update of the OpenEVSE
+self.updateFetching = ko.observable(false);
+self.updateComplete = ko.observable(false);
+self.updateError = ko.observable("");
+self.updateFilename = ko.observable("");
+self.updateLoaded = ko.observable(0);
+self.updateTotal = ko.observable(1);
+self.updateProgress = ko.pureComputed(function () {
+  return (self.updateLoaded() / self.updateTotal()) * 100;
+});
 
-  self.otaUpdate = function() {
-    if("" === self.updateFilename()) {
-      self.updateError("Filename not set");
-      return;
+self.otaUpdate = function () {
+  if ("" === self.updateFilename()) {
+    self.updateError("Filename not set");
+    return;
+  }
+
+  self.updateFetching(true);
+  self.updateError("");
+
+  var form = $("#upload_form")[0];
+  var data = new FormData(form);
+
+  $.ajax({
+    url: "/upload",
+    type: "POST",
+    data: data,
+    contentType: false,
+    processData: false,
+    xhr: function () {
+      var xhr = new window.XMLHttpRequest();
+      xhr.upload.addEventListener("progress", function (evt) {
+        if (evt.lengthComputable) {
+          self.updateLoaded(evt.loaded);
+          self.updateTotal(evt.total);
+        }
+      }, false);
+      return xhr;
     }
-
-    self.updateFetching(true);
-    self.updateError("");
-
-    var form = $("#upload_form")[0];
-    var data = new FormData(form);
-
-    $.ajax({
-      url: "/upload",
-      type: "POST",
-      data: data,
-      contentType: false,
-      processData:false,
-      xhr: function() {
-        var xhr = new window.XMLHttpRequest();
-        xhr.upload.addEventListener("progress", function(evt) {
-          if (evt.lengthComputable) {
-            self.updateLoaded(evt.loaded);
-            self.updateTotal(evt.total);
-          }
-        }, false);
-        return xhr;
-      }
-    }).done(function(msg) {
-      console.log(msg);
-      if("OK" == msg) {
-        self.updateComplete(true);
-        setTimeout(() => {
-          location.reload();
-        }, 5000);
-      } else {
-        self.updateError(msg);
-      }
-    }).fail(function () {
-      self.updateError("HTTP Update failed");
-    }).always(function () {
-      self.updateFetching(false);
-    });
-  };
+  }).done(function (msg) {
+    console.log(msg);
+    if ("OK" == msg) {
+      self.updateComplete(true);
+      setTimeout(() => {
+        location.reload();
+      }, 5000);
+    } else {
+      self.updateError(msg);
+    }
+  }).fail(function () {
+    self.updateError("HTTP Update failed");
+  }).always(function () {
+    self.updateFetching(false);
+  });
+};

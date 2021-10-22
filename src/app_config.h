@@ -72,11 +72,20 @@ extern int timer_start2;
 extern int timer_stop2;
 extern int time_offset;
 
+extern int standby_start;
+extern int standby_stop;
+
 extern int voltage_output;
 
 extern String ctrl_mode;
 extern bool ctrl_update;
 extern bool ctrl_state;
+
+extern String divert_mode;
+extern bool divert_update;
+extern bool divert_state;
+
+extern bool rotation;
 
 // 24-bits of Flags
 extern uint32_t flags;
@@ -85,6 +94,8 @@ extern uint32_t flags;
 #define CONFIG_SERVICE_MQTT     (1 << 1)
 #define CONFIG_CTRL_UPDATE      (1 << 2)
 #define CONFIG_CTRL_STATE       (1 << 3)
+#define CONFIG_DIVERT_UPDATE    (1 << 4)
+#define CONFIG_DIVERT_STATE     (1 << 5)
 
 inline bool config_emoncms_enabled()
 {
@@ -104,6 +115,16 @@ inline bool config_ctrl_update()
 inline bool config_ctrl_state()
 {
   return CONFIG_CTRL_STATE == (flags & CONFIG_CTRL_STATE);
+}
+
+inline bool config_divert_update()
+{
+  return CONFIG_DIVERT_UPDATE == (flags & CONFIG_DIVERT_UPDATE);
+}
+
+inline bool config_divert_state()
+{
+  return CONFIG_DIVERT_STATE == (flags & CONFIG_DIVERT_STATE);
 }
 
 // -------------------------------------------------------------------
@@ -131,7 +152,7 @@ extern void config_save_admin(String user, String pass);
 // -------------------------------------------------------------------
 // Save the admin/web interface details
 // -------------------------------------------------------------------
-extern void config_save_timer(int start1, int stop1, int start2, int stop2, int voltage_output, int qtime_offset);
+extern void config_save_timer(int start1, int stop1, int start2, int stop2, int startsb, int stopsb, int voltage_output, int qtime_offset);
 extern void config_save_voltage_output(int qvoltage_output, int save_to_eeprom);
 // -------------------------------------------------------------------
 // Save the Wifi details
@@ -144,6 +165,16 @@ extern void config_save_wifi(String qsid, String qpass);
 extern void config_save_ctrl(String mode);
 
 // -------------------------------------------------------------------
+// Save the Diversion Mode
+// -------------------------------------------------------------------
+extern void config_save_divert(String mode);
+
+// -------------------------------------------------------------------
+// Save the Rotation Mode
+// -------------------------------------------------------------------
+extern void config_save_rotation(bool mode);
+
+// -------------------------------------------------------------------
 // Reset the config back to defaults
 // -------------------------------------------------------------------
 extern void config_reset();
@@ -154,13 +185,13 @@ void config_set(const char *name, bool val);
 void config_set(const char *name, double val);
 
 // Read config settings from JSON object
-bool config_deserialize(String& json);
+bool config_deserialize(String &json);
 bool config_deserialize(const char *json);
 bool config_deserialize(DynamicJsonDocument &doc);
 void config_commit();
 
 // Write config settings to JSON object
-bool config_serialize(String& json, bool longNames = true, bool compactOutput = false, bool hideSecrets = false);
+bool config_serialize(String &json, bool longNames = true, bool compactOutput = false, bool hideSecrets = false);
 bool config_serialize(DynamicJsonDocument &doc, bool longNames = true, bool compactOutput = false, bool hideSecrets = false);
 
 #endif // _EMONESP_CONFIG_H

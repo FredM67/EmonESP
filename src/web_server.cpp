@@ -404,22 +404,17 @@ void handleSaveTimer(AsyncWebServerRequest *request)
     return;
   }
 
-  String tmp = request->arg(F("timer_start1"));
-  int qtimer_start1 = tmp.toInt();
-  tmp = request->arg(F("timer_stop1"));
-  int qtimer_stop1 = tmp.toInt();
-  tmp = request->arg(F("timer_start2"));
-  int qtimer_start2 = tmp.toInt();
-  tmp = request->arg(F("timer_stop2"));
-  int qtimer_stop2 = tmp.toInt();
-  tmp = request->arg(F("voltage_output"));
-  int qvoltage_output = tmp.toInt();
-  tmp = request->arg(F("time_offset"));
-  int qtime_offset = tmp.toInt();
+  config_save_timer(request->arg(F("timer_start1")).toInt(),
+                    request->arg(F("timer_stop1")).toInt(),
+                    request->arg(F("timer_start2")).toInt(),
+                    request->arg(F("timer_stop2")).toInt(),
+                    request->arg(F("standby_start")).toInt(),
+                    request->arg(F("standby_stop")).toInt(),
 
-  config_save_timer(qtimer_start1, qtimer_stop1, qtimer_start2, qtimer_stop2, qvoltage_output, qtime_offset);
+                    request->arg(F("voltage_output")).toInt(),
+                    request->arg(F("time_offset")).toInt());
 
-  mqtt_publish("out/timer", String(qtimer_start1) + " " + String(qtimer_stop1) + " " + String(qtimer_start2) + " " + String(qtimer_stop2) + " " + String(qvoltage_output));
+  mqtt_publish("out/timer", String(timer_start1) + " " + String(timer_stop1) + " " + String(timer_start2) + " " + String(timer_stop2) + " " + String(voltage_output));
 
   response->setCode(200);
   response->print(F("saved"));
@@ -545,8 +540,12 @@ void handleStatus(AsyncWebServerRequest *request)
 
   doc[F("free_heap")] = ESPAL.getFreeHeap();
   doc[F("time")] = getTime();
+  doc[F("date")] = getDate();
   doc[F("ctrl_mode")] = ctrl_mode;
   doc[F("ctrl_state")] = ctrl_state;
+  doc[F("divert_mode")] = divert_mode;
+  doc[F("divert_state")] = divert_state;
+  doc[F("rotation")] = rotation;
   doc[F("ota_update")] = (int)Update.isRunning();
 
   response->setCode(200);
@@ -851,6 +850,12 @@ void handleTime(AsyncWebServerRequest *request)
   request->send(response);
 }
 
+void handleDate(AsyncWebServerRequest *request)
+{
+  AsyncWebServerResponse *response = request->beginResponse(200, CONTENT_TYPE_TEXT, getDate());
+  request->send(response);
+}
+
 void handleCtrlMode(AsyncWebServerRequest *request)
 {
   AsyncResponseStream *response;
@@ -858,7 +863,9 @@ void handleCtrlMode(AsyncWebServerRequest *request)
   {
     return;
   }
+
   String qmode = request->arg(F("mode"));
+
   if (qmode != "On" && qmode != "Off" && qmode != "Timer")
     return;
 
@@ -872,7 +879,45 @@ void handleCtrlMode(AsyncWebServerRequest *request)
   request->send(response);
 }
 
-void handleDebug(AsyncWebServerRequest *request, StreamSpy &spy)
+void handleDivertMode(AsyncWebServerRequest *request)
+{
+  AsyncResponseStream *response;
+  if (false == requestPreProcess(request, response, CONTENT_TYPE_TEXT))
+  {
+    return;
+  }
+
+  String qmode = request->arg(F("mode"));
+  if (qmode != "On" && qmode != "Off" && qmode != "Standby")
+    return;
+
+  config_save_divert(qmode);
+
+  if (!mqtt_server.isEmpty())
+    mqtt_publish("out/divertmode", String(divert_mode));
+
+  response->setCode(200);
+  response->print(qmode);
+  request->send(response);
+}
+
+void handleRotation(AsyncWebServerRequest *request)
+{
+  AsyncResponseStream *response;
+  if (false == requestPreProcess(request, response, CONTENT_TYPE_TEXT))
+  {
+    return;
+  }
+
+  config_save_rotation(isPositive(request->arg(F("mode"))));
+
+  response->setCode(200);
+  response->print(rotation);
+  request->send(response);
+}
+
+    void
+    handleDebug(AsyncWebServerRequest *request, StreamSpy &spy)
 {
   AsyncResponseStream *response;
   if (false == requestPreProcess(request, response, CONTENT_TYPE_TEXT))
@@ -1018,7 +1063,10 @@ void web_server_setup()
 
   server.on("/emoncms/describe", handleDescribe);
   server.on("/time", handleTime);
+  server.on("/date", handleDate);
   server.on("/ctrlmode", handleCtrlMode);
+  server.on("/divertmode", handleDivertMode);
+  server.on("/rotation", handleRotation);
   server.on("/vout", handleSetVout);
   server.on("/flow", handleSetFlowT);
 

@@ -7,11 +7,11 @@
 #include "app_config.h"
 
 #include <Arduino.h>
-#include <EEPROM.h>             // Save config settings
+#include <EEPROM.h> // Save config settings
 #include <ConfigJson.h>
 
-#define EEPROM_SIZE     4096
-#define CHECKSUM_SEED    128
+#define EEPROM_SIZE 4096
+#define CHECKSUM_SEED 128
 
 static int getNodeId()
 {
@@ -58,14 +58,22 @@ int timer_start1 = 0;
 int timer_stop1 = 0;
 int timer_start2 = 0;
 int timer_stop2 = 0;
+int standby_start = 0;
+int standby_stop = 0;
 
 int voltage_output = 0;
 
 String ctrl_mode = "Off";
 bool ctrl_update = false;
 bool ctrl_state = false;
-int time_offset = 0;
 
+String divert_mode = "On";
+bool divert_update = false;
+bool divert_state = true;
+
+bool rotation = false;
+
+int time_offset = 0;
 
 uint32_t flags;
 
@@ -74,53 +82,59 @@ void config_changed(String name);
 ConfigOptDefenition<uint32_t> flagsOpt = ConfigOptDefenition<uint32_t>(flags, 0, "flags", "f");
 
 ConfigOpt *opts[] =
-{
-// Wifi Network Strings, 0
-  new ConfigOptDefenition<String>(esid, "", "ssid", "ws"),
-  new ConfigOptSecret(epass, "", "pass", "wp"),
+    {
+        // Wifi Network Strings, 0
+        new ConfigOptDefenition<String>(esid, "", "ssid", "ws"),
+        new ConfigOptSecret(epass, "", "pass", "wp"),
 
-// Web server authentication (leave blank for none), 2
-  new ConfigOptDefenition<String>(www_username, "", "www_username", "au"),
-  new ConfigOptSecret(www_password, "", "www_password", "ap"),
+        // Web server authentication (leave blank for none), 2
+        new ConfigOptDefenition<String>(www_username, "", "www_username", "au"),
+        new ConfigOptSecret(www_password, "", "www_password", "ap"),
 
-// Advanced settings, 4
-  new ConfigOptDefenition<String>(node_name, node_name_default, "hostname", "hn"),
+        // Advanced settings, 4
+        new ConfigOptDefenition<String>(node_name, node_name_default, "hostname", "hn"),
 
-// EMONCMS SERVER strings, 5
-  new ConfigOptDefenition<String>(emoncms_server, "emoncms.org", "emoncms_server", "es"),
-  new ConfigOptDefenition<String>(emoncms_path, "", "emoncms_path", "ep"),
-  new ConfigOptDefenition<String>(emoncms_node, node_name, "emoncms_node", "en"),
-  new ConfigOptSecret(emoncms_apikey, "", "emoncms_apikey", "ea"),
-  new ConfigOptDefenition<String>(emoncms_fingerprint, "", "emoncms_fingerprint", "ef"),
+        // EMONCMS SERVER strings, 5
+        new ConfigOptDefenition<String>(emoncms_server, "emoncms.org", "emoncms_server", "es"),
+        new ConfigOptDefenition<String>(emoncms_path, "", "emoncms_path", "ep"),
+        new ConfigOptDefenition<String>(emoncms_node, node_name, "emoncms_node", "en"),
+        new ConfigOptSecret(emoncms_apikey, "", "emoncms_apikey", "ea"),
+        new ConfigOptDefenition<String>(emoncms_fingerprint, "", "emoncms_fingerprint", "ef"),
 
-// MQTT Settings, 10
-  new ConfigOptDefenition<String>(mqtt_server, "emonpi", "mqtt_server", "ms"),
-  new ConfigOptDefenition<int>(mqtt_port, 1883, "mqtt_port", "mpt"),
-  new ConfigOptDefenition<String>(mqtt_topic, "emonesp", "mqtt_topic", "mt"),
-  new ConfigOptDefenition<String>(mqtt_user, "emonpi", "mqtt_user", "mu"),
-  new ConfigOptSecret(mqtt_pass, "emonpimqtt2016", "mqtt_pass", "mp"),
-  new ConfigOptDefenition<String>(mqtt_feed_prefix, "", "mqtt_feed_prefix", "mfp"),
+        // MQTT Settings, 10
+        new ConfigOptDefenition<String>(mqtt_server, "emonpi", "mqtt_server", "ms"),
+        new ConfigOptDefenition<int>(mqtt_port, 1883, "mqtt_port", "mpt"),
+        new ConfigOptDefenition<String>(mqtt_topic, "emonesp", "mqtt_topic", "mt"),
+        new ConfigOptDefenition<String>(mqtt_user, "emonpi", "mqtt_user", "mu"),
+        new ConfigOptSecret(mqtt_pass, "emonpimqtt2016", "mqtt_pass", "mp"),
+        new ConfigOptDefenition<String>(mqtt_feed_prefix, "", "mqtt_feed_prefix", "mfp"),
 
-// Timer Settings, 16
-  new ConfigOptDefenition<int>(timer_start1, 0, "timer_start1", "tsr1"),
-  new ConfigOptDefenition<int>(timer_stop1, 0, "timer_stop1", "tsp1"),
-  new ConfigOptDefenition<int>(timer_start2, 0, "timer_start2", "tsr2"),
-  new ConfigOptDefenition<int>(timer_stop2, 0, "timer_stop2", "tsp2"),
-  new ConfigOptDefenition<int>(time_offset, 0, "time_offset", "to"),
+        // Timer Settings, 16
+        new ConfigOptDefenition<int>(timer_start1, 0, "timer_start1", "tsr1"),
+        new ConfigOptDefenition<int>(timer_stop1, 0, "timer_stop1", "tsp1"),
+        new ConfigOptDefenition<int>(timer_start2, 0, "timer_start2", "tsr2"),
+        new ConfigOptDefenition<int>(timer_stop2, 0, "timer_stop2", "tsp2"),
+        new ConfigOptDefenition<int>(time_offset, 0, "time_offset", "to"),
+        new ConfigOptDefenition<bool>(rotation, false, "rotation", "ro"),
 
-  new ConfigOptDefenition<int>(voltage_output, 0, "voltage_output", "vo"),
+        new ConfigOptDefenition<int>(voltage_output, 0, "voltage_output", "vo"),
 
-  new ConfigOptDefenition<String>(ctrl_mode, "Off", "ctrl_mode", "cm"),
+        new ConfigOptDefenition<String>(ctrl_mode, "Off", "ctrl_mode", "cm"),
 
-// Flags, 23
-  &flagsOpt,
+        new ConfigOptDefenition<String>(divert_mode, "On", "divert_mode", "dm"),
+        new ConfigOptDefenition<int>(standby_start, 0, "standby_start", "ssr"),
+        new ConfigOptDefenition<int>(standby_stop, 0, "standby_stop", "ssp"),
 
-// Virtual Options, 24
-  new ConfigOptVirtualBool(flagsOpt, CONFIG_SERVICE_EMONCMS, CONFIG_SERVICE_EMONCMS, "emoncms_enabled", "ee"),
-  new ConfigOptVirtualBool(flagsOpt, CONFIG_SERVICE_MQTT, CONFIG_SERVICE_MQTT, "mqtt_enabled", "me"),
-  new ConfigOptVirtualBool(flagsOpt, CONFIG_CTRL_UPDATE, CONFIG_CTRL_UPDATE, "ctrl_update", "ce"),
-  new ConfigOptVirtualBool(flagsOpt, CONFIG_CTRL_STATE, CONFIG_CTRL_STATE, "ctrl_state", "cs")
-};
+        // Flags, 23
+        &flagsOpt,
+
+        // Virtual Options, 24
+        new ConfigOptVirtualBool(flagsOpt, CONFIG_SERVICE_EMONCMS, CONFIG_SERVICE_EMONCMS, "emoncms_enabled", "ee"),
+        new ConfigOptVirtualBool(flagsOpt, CONFIG_SERVICE_MQTT, CONFIG_SERVICE_MQTT, "mqtt_enabled", "me"),
+        new ConfigOptVirtualBool(flagsOpt, CONFIG_CTRL_UPDATE, CONFIG_CTRL_UPDATE, "ctrl_update", "ce"),
+        new ConfigOptVirtualBool(flagsOpt, CONFIG_CTRL_STATE, CONFIG_CTRL_STATE, "ctrl_state", "cs"),
+        new ConfigOptVirtualBool(flagsOpt, CONFIG_DIVERT_UPDATE, CONFIG_DIVERT_UPDATE, "divert_update", "de"),
+        new ConfigOptVirtualBool(flagsOpt, CONFIG_DIVERT_STATE, CONFIG_DIVERT_STATE, "divert_state", "ds")};
 
 ConfigJson config(opts, sizeof(opts) / sizeof(opts[0]), EEPROM_SIZE);
 
@@ -131,11 +145,11 @@ void ResetEEPROM()
 {
   EEPROM.begin(EEPROM_SIZE);
 
-  //DEBUG.println("Erasing EEPROM");
+  // DEBUG.println("Erasing EEPROM");
   for (int i = 0; i < EEPROM_SIZE; ++i)
   {
     EEPROM.write(i, 0xff);
-    //DEBUG.print("#");
+    // DEBUG.print("#");
   }
   EEPROM.end();
 }
@@ -199,7 +213,7 @@ bool config_deserialize(DynamicJsonDocument &doc)
   return config.deserialize(doc);
 }
 
-bool config_serialize(String& json, bool longNames, bool compactOutput, bool hideSecrets)
+bool config_serialize(String &json, bool longNames, bool compactOutput, bool hideSecrets)
 {
   return config.serialize(json, longNames, compactOutput, hideSecrets);
 }
@@ -227,7 +241,7 @@ void config_set(const char *name, double val)
 }
 
 void config_save_emoncms(bool enable, String server, String path, String node, String apikey,
-                    String fingerprint)
+                         String fingerprint)
 {
   uint32_t newflags = flags & ~CONFIG_SERVICE_EMONCMS;
   if (enable)
@@ -275,7 +289,7 @@ void config_save_admin(String user, String pass)
   config.commit();
 }
 
-void config_save_timer(int start1, int stop1, int start2, int stop2, int qvoltage_output, int qtime_offset)
+void config_save_timer(int start1, int stop1, int start2, int stop2, int startsb, int stopsb, int qvoltage_output, int qtime_offset)
 {
   config.set(F("timer_start1"), start1);
   config.set(F("timer_stop1"), stop1);
@@ -283,14 +297,15 @@ void config_save_timer(int start1, int stop1, int start2, int stop2, int qvoltag
   config.set(F("timer_stop2"), stop2);
   config.set(F("voltage_output"), qvoltage_output);
   config.set(F("time_offset"), qtime_offset);
+  config.set(F("standby_start"), startsb);
+  config.set(F("standby_stop"), stopsb);
   config.commit();
 }
-
 
 void config_save_voltage_output(int qvoltage_output, int save_to_eeprom)
 {
   voltage_output = qvoltage_output;
-  
+
   if (save_to_eeprom)
   {
     config.set(F("voltage_output"), qvoltage_output);
@@ -320,6 +335,18 @@ void config_save_flags(uint32_t newFlags)
 void config_save_ctrl(String mode)
 {
   config.set(F("ctrl_mode"), mode);
+  config.commit();
+}
+
+void config_save_divert(String mode)
+{
+  config.set(F("divert_mode"), mode);
+  config.commit();
+}
+
+void config_save_rotation(bool mode)
+{
+  config.set(F("rotation"), mode);
   config.commit();
 }
 

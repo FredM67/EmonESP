@@ -58,7 +58,7 @@ bool input_get(JsonDocument &data)
     line.trim();
 
     int len = line.length();
-    if(len > 0) 
+    if(len > 0)
     {
       DEBUG.printf_P(PSTR("Got '%s'\n"), line.c_str());
 

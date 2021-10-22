@@ -51,7 +51,6 @@ const char *post_path = "/input/post?";
 static void emoncms_result(bool success, String message)
 {
   StaticJsonDocument<128> event;
-  
 
   if (success)
   {
@@ -66,7 +65,7 @@ static void emoncms_result(bool success, String message)
     }
   }
 
-  if(emoncms_connected != success)
+  if (emoncms_connected != success)
   {
     emoncms_connected = success;
     event[F("emoncms_connected")] = (int)emoncms_connected;
@@ -103,8 +102,8 @@ void emoncms_publish(JsonDocument &data)
       // HTTPS on port 443 if HTTPS fingerprint is present
       DBUGLN(F("HTTPS Enabled"));
       result =
-        get_https(emoncms_fingerprint.c_str(), emoncms_server.c_str(), url,
-                  443);
+          get_https(emoncms_fingerprint.c_str(), emoncms_server.c_str(), url,
+                    443);
     }
     else
     {
@@ -115,7 +114,7 @@ void emoncms_publish(JsonDocument &data)
 
     const size_t capacity = JSON_OBJECT_SIZE(2) + result.length();
     DynamicJsonDocument doc(capacity);
-    if(DeserializationError::Code::Ok == deserializeJson(doc, result.c_str(), result.length()))
+    if (DeserializationError::Code::Ok == deserializeJson(doc, result.c_str(), result.length()))
     {
       DBUGLN(F("Got JSON"));
       bool success = doc[F("success")]; // true
