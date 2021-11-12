@@ -81,7 +81,17 @@ void setup()
   pinMode(CONTROL_PIN, OUTPUT);
   digitalWrite(CONTROL_PIN, !CONTROL_PIN_ON_STATE);
 
-// custom: analog output pin
+// custom: analog output pins
+#ifdef ROTATION_PIN
+  pinMode(ROTATION_PIN, OUTPUT);
+  digitalWrite(ROTATION_PIN, !ROTATION_PIN_ON_STATE);
+#endif
+
+#ifdef DIVERSION_PIN
+  pinMode(DIVERSION_PIN, OUTPUT);
+  digitalWrite(DIVERSION_PIN, !DIVERSION_PIN_ON_STATE);
+#endif
+
 #ifdef VOLTAGE_OUT_PIN
   pinMode(4, OUTPUT);
 #endif
@@ -234,7 +244,7 @@ void loop()
     }
 
 #ifdef ROTATION_PIN
-    if (rotation && (timenow == 0))
+    if (rotation && (timenow == 0)) // time at midnight
       digitalWrite(ROTATION_PIN, ROTATION_PIN_ON_STATE);
     else
       digitalWrite(ROTATION_PIN, !ROTATION_PIN_ON_STATE);
