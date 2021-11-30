@@ -47,6 +47,15 @@ static uint32_t last_mem = 0;
 static uint32_t start_mem = 0;
 static unsigned long mem_info_update = 0;
 
+#ifdef PVROUTER
+#include <ModbusTCP.h>
+
+constexpr uint16_t TARIFF_REG{60006}; // Modbus Offset for Tariff switch
+IPAddress PAC_ECS(192, 168, 1, 102);  // Address of Modbus Slave device
+
+ModbusTCP mb; // ModbusTCP object
+#endif
+
 // -------------------------------------------------------------------
 // SETUP
 // -------------------------------------------------------------------
@@ -123,6 +132,10 @@ void setup()
   DBUGF("After timeClient.begin: %d", ESP.getFreeHeap());
 
   delay(100);
+
+#ifdef PVROUTER
+  mb.client();
+#endif
 
   start_mem = last_mem = ESP.getFreeHeap();
 } // end setup
@@ -231,6 +244,16 @@ void loop()
       ctrl_state = true;
     else // 2'. Off (default)
       ctrl_state = false;
+
+#ifdef PVROUTER
+    if (!mb.isConnected(PAC_ECS))
+      mb.connect(PAC_ECS);
+
+    if (mb.isConnected(PAC_ECS))
+      mb.writeHreg(PAC_ECS, TARIFF_REG, ctrl_state ? (uint16_t)0 : (uint16_t)1);
+
+    mb.task(); // Common local Modbus task
+#endif
 
     // 3. Apply
     if (ctrl_state)
