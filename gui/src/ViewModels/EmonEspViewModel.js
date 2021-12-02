@@ -31,6 +31,7 @@ function EmonEspViewModel(baseHost, basePort, baseProtocol) {
   self.last = new LastValuesViewModel();
   self.scan = new WiFiScanViewModel(self.baseEndpoint);
   self.wifi = new WiFiConfigViewModel(self.baseEndpoint, self.config, self.status, self.scan);
+  self.zones = new ZonesViewModel(self.baseEndpoint);
 
   // Show/hide password state
   self.wifiPassword = new PasswordViewModel(self.config.pass);
@@ -73,6 +74,15 @@ function EmonEspViewModel(baseHost, basePort, baseProtocol) {
           updateTimer = setTimeout(self.update, updateTime);
 
           self.upgradeUrl(baseEndpoint + "/update");
+
+          // Load the Time Zone information
+          if (false !== self.config.time_zone()) {
+            self.zones.initialValue(self.config.time_zone());
+            self.zones.update(() => {
+              self.config.time_zone.valueHasMutated();
+            });
+          }
+
           self.updating(false);
         });
       });
@@ -98,6 +108,17 @@ function EmonEspViewModel(baseHost, basePort, baseProtocol) {
       });
     });
   };
+
+  self.time_zone = ko.computed({
+    read: () => {
+      return self.config.time_zone();
+    },
+    write: (val) => {
+      if (undefined !== val && false === self.zones.fetching()) {
+        self.config.time_zone(val);
+      }
+    }
+  });
 
   self.wifiConnecting = ko.observable(false);
   self.status.mode.subscribe(function (newValue) {

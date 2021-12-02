@@ -41,7 +41,6 @@
 #include "emoncms.h"
 #include "ota.h"
 #include "debug.h"
-#include <NTPClient.h>
 #include "espal.h"
 
 AsyncWebServer server(80); // Create class for Web server

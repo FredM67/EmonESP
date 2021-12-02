@@ -217,6 +217,13 @@
             <p>Time offset (in minutes): <input type="text" data-bind="textInput: config.time_offset"
                 style="width:60px; text-align:center">
             </p>
+            <p>
+              <b>Time zone:</b><br />
+              <select data-bind="options: zones.zones,
+                                    optionsText: 'name',
+                                    optionsValue: 'value',
+                                    value: time_zone"></select>
+            </p>
           </div>
           <br>
           <button

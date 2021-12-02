@@ -33,10 +33,18 @@
 #include "mqtt.h"
 #include "http.h"
 #include "autoauth.h"
-#include <NTPClient.h>
+
+#include <time.h>     // time() ctime()
+#include <sys/time.h> // struct timeval
+
+#define TZ 1      // (utc+) TZ in hours
+#define DST_MN 60 // use 60mn for summer time in some countries
+
+#define TZ_MN ((TZ)*60)
+#define TZ_SEC ((TZ)*3600)
+#define DST_SEC ((DST_MN)*60)
 
 WiFiUDP ntpUDP;
-NTPClient timeClient(ntpUDP, "europe.pool.ntp.org", time_offset * 60, 60000);
 unsigned long last_ctrl_update = 0;
 unsigned long last_pushbtn_check = 0;
 bool pushbtn_action = false;
@@ -77,7 +85,7 @@ void setup()
   config_load_settings();
   DBUGF("After config_load_settings: %d", ESP.getFreeHeap());
 
-  timeClient.setTimeOffset(time_offset * 60);
+  configTime("CET-1CEST,M3.5.0,M10.5.0/3", "pool.ntp.org");
 
   DBUG("Node name: ");
   DBUGLN(node_name);
@@ -127,10 +135,6 @@ void setup()
   auth_setup();
   DBUGF("After auth_setup: %d", ESP.getFreeHeap());
 
-  // Time
-  timeClient.begin();
-  DBUGF("After timeClient.begin: %d", ESP.getFreeHeap());
-
   delay(100);
 
 #ifdef PVROUTER
@@ -153,6 +157,8 @@ void led_flash(int ton, int toff)
 // -------------------------------------------------------------------
 void loop()
 {
+  static int time_offset_previous{time_offset};
+
   if (millis() > mem_info_update)
   {
     mem_info_update = millis() + 2000;
@@ -165,10 +171,19 @@ void loop()
     }
   }
 
+/*   if (time_offset_previous != time_offset)
+  {
+    if (time_offset == 65535)
+      time_offset = 0;
+
+    configTime(time_offset * 60, DST_SEC, "pool.ntp.org");
+
+    time_offset_previous == time_offset;
+  } */
+
   ota_loop();
   web_server_loop();
   wifi_loop();
-  timeClient.update();
 
   StaticJsonDocument<512> data;
   bool gotInput = input_get(data);
@@ -195,9 +210,12 @@ void loop()
     ctrl_state = false;  // default OFF
     divert_state = true; // default ON
 
-    int timenow = timeClient.getHours() * 100 + timeClient.getMinutes();
+    auto now = time(nullptr);
+    auto datetimenow = localtime(&now);
+
+    int timenow = datetimenow->tm_hour * 100 + datetimenow->tm_min;
     int datenow = getDateAsInt();
-    int day = timeClient.getDay();
+    int day = datetimenow->tm_wday;
 
     // Diversion
     if (divert_mode == "Standby")
@@ -307,7 +325,19 @@ void loop()
 
 String getTime()
 {
-  return timeClient.getFormattedTime();
+  auto now = time(nullptr);
+  auto datetimenow = localtime(&now);
+
+  auto hours = datetimenow->tm_hour;
+  String hoursStr = hours < 10 ? "0" + String(hours) : String(hours);
+
+  auto minutes = datetimenow->tm_min;
+  String minuteStr = minutes < 10 ? "0" + String(minutes) : String(minutes);
+
+  auto seconds = datetimenow->tm_sec;
+  String secondStr = seconds < 10 ? "0" + String(seconds) : String(seconds);
+
+  return hoursStr + ":" + minuteStr + ":" + secondStr;
 }
 
 #define LEAP_YEAR(Y) ((Y > 0) && !(Y % 4) && ((Y % 100) || !(Y % 400)))
@@ -316,69 +346,26 @@ String getDate()
 {
   // Based on https://github.com/PaulStoffregen/Time/blob/master/Time.cpp
   // currently assumes UTC timezone, instead of using this->_timeOffset
-  unsigned long rawTime = timeClient.getEpochTime() / 86400L; // in days
-  unsigned long days = 0, year = 1970;
-  uint8_t month;
-  static const uint8_t monthDays[] = {31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31};
+  auto now = time(nullptr);
+  auto datetimenow = localtime(&now);
 
-  while ((days += (LEAP_YEAR(year) ? 366 : 365)) <= rawTime)
-    year++;
-  rawTime -= days - (LEAP_YEAR(year) ? 366 : 365); // now it is days in this year, starting at 0
-  days = 0;
-  for (month = 0; month < 12; month++)
-  {
-    uint8_t monthLength;
-    if (month == 1)
-    { // february
-      monthLength = LEAP_YEAR(year) ? 29 : 28;
-    }
-    else
-    {
-      monthLength = monthDays[month];
-    }
-    if (rawTime < monthLength)
-      break;
-    rawTime -= monthLength;
-  }
-  String monthStr = ++month < 10 ? "0" + String(month) : String(month);     // jan is month 1
-  String dayStr = ++rawTime < 10 ? "0" + String(rawTime) : String(rawTime); // day of month
-  return String(year) + "-" + monthStr + "-" + dayStr;
+  auto month = datetimenow->tm_mon;
+  auto day = datetimenow->tm_mday;
+
+  String monthStr = ++month < 10 ? "0" + String(month) : String(month); // jan is month 1
+  String dayStr = day < 10 ? "0" + String(day) : String(day);           // day of month
+  return String(datetimenow->tm_year + 1900) + "-" + monthStr + "-" + dayStr;
 }
 
 int getDateAsInt()
 {
   // Based on https://github.com/PaulStoffregen/Time/blob/master/Time.cpp
   // currently assumes UTC timezone, instead of using this->_timeOffset
-  unsigned long rawTime = timeClient.getEpochTime() / 86400L; // in days
-  unsigned long days = 0, year = 1970;
-  uint8_t month;
-  static const uint8_t monthDays[] = {31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31};
 
-  while ((days += (LEAP_YEAR(year) ? 366 : 365)) <= rawTime)
-    year++;
-  rawTime -= days - (LEAP_YEAR(year) ? 366 : 365); // now it is days in this year, starting at 0
-  days = 0;
-  for (month = 0; month < 12; month++)
-  {
-    uint8_t monthLength;
-    if (month == 1)
-    { // february
-      monthLength = LEAP_YEAR(year) ? 29 : 28;
-    }
-    else
-    {
-      monthLength = monthDays[month];
-    }
-    if (rawTime < monthLength)
-      break;
-    rawTime -= monthLength;
-  }
-  return (year * 10000) + (++month * 100) + (++rawTime);
-}
+  auto now = time(nullptr);
+  auto datetimenow = localtime(&now);
 
-void setTimeOffset()
-{
-  timeClient.setTimeOffset(time_offset * 60);
+  return ((datetimenow->tm_year + 1900) * 10000) + ((datetimenow->tm_mon + 1) * 100) + datetimenow->tm_mday;
 }
 
 void event_send(String &json)
