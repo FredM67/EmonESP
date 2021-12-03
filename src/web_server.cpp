@@ -411,7 +411,6 @@ void handleSaveTimer(AsyncWebServerRequest *request)
                     request->arg(F("standby_stop")).toInt(),
 
                     request->arg(F("voltage_output")).toInt(),
-                    request->arg(F("time_offset")).toInt(),
                     request->arg(F("time_zone")));
 
   mqtt_publish("out/timer", String(timer_start1) + " " + String(timer_stop1) + " " + String(timer_start2) + " " + String(timer_stop2) + " " + String(voltage_output));

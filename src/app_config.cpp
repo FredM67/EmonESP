@@ -76,8 +76,6 @@ bool divert_state = true;
 
 bool rotation = false;
 
-int time_offset = 0;
-
 // Time
 String time_zone;
 
@@ -123,7 +121,6 @@ ConfigOpt *opts[] =
         new ConfigOptDefenition<int>(timer_stop1, 0, "timer_stop1", "tsp1"),
         new ConfigOptDefenition<int>(timer_start2, 0, "timer_start2", "tsr2"),
         new ConfigOptDefenition<int>(timer_stop2, 0, "timer_stop2", "tsp2"),
-        new ConfigOptDefenition<int>(time_offset, 0, "time_offset", "to"),
         new ConfigOptDefenition<bool>(rotation, false, "rotation", "ro"),
 
         new ConfigOptDefenition<int>(voltage_output, 0, "voltage_output", "vo"),
@@ -302,14 +299,13 @@ void config_save_admin(String user, String pass)
   config.commit();
 }
 
-void config_save_timer(int start1, int stop1, int start2, int stop2, int startsb, int stopsb, int qvoltage_output, int qtime_offset, String qtime_zone)
+void config_save_timer(int start1, int stop1, int start2, int stop2, int startsb, int stopsb, int qvoltage_output, String qtime_zone)
 {
   config.set(F("timer_start1"), start1);
   config.set(F("timer_stop1"), stop1);
   config.set(F("timer_start2"), start2);
   config.set(F("timer_stop2"), stop2);
   config.set(F("voltage_output"), qvoltage_output);
-  config.set(F("time_offset"), qtime_offset);
   config.set(F("standby_start"), startsb);
   config.set(F("standby_stop"), stopsb);
   config.set(F("time_zone"), qtime_zone);

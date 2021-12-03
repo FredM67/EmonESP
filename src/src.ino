@@ -157,8 +157,6 @@ void led_flash(int ton, int toff)
 // -------------------------------------------------------------------
 void loop()
 {
-  static int time_offset_previous{time_offset};
-
   if (millis() > mem_info_update)
   {
     mem_info_update = millis() + 2000;
@@ -305,15 +303,11 @@ void loop()
 
     if (pushbtn_state && last_pushbtn_state && !pushbtn_action)
     {
-      DBUGF("Loop - Button pressed - '%s'", ctrl_mode.c_str());
-
       pushbtn_action = true;
       if (ctrl_mode == "On")
         ctrl_mode = "Off";
       else
         ctrl_mode = "On";
-
-      DBUGF("Loop - Button pressed 2 - '%s'", ctrl_mode.c_str());
 
       if (!mqtt_server.isEmpty())
         mqtt_publish("out/ctrlmode", String(ctrl_mode));
@@ -339,8 +333,6 @@ String getTime()
 
   return hoursStr + ":" + minuteStr + ":" + secondStr;
 }
-
-#define LEAP_YEAR(Y) ((Y > 0) && !(Y % 4) && ((Y % 100) || !(Y % 400)))
 
 String getDate()
 {

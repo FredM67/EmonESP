@@ -30,7 +30,6 @@ function ConfigViewModel() {
     "standby_stop": "",
     "rotation": false,
     "voltage_output": "",
-    "time_offset": "",
     "time_zone": false
   }, baseEndpoint + "/config");
 

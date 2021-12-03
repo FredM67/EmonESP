@@ -182,7 +182,6 @@ function EmonEspViewModel(baseHost, basePort, baseProtocol) {
       standby_start: self.config.standby_start(),
       standby_stop: self.config.standby_stop(),
       voltage_output: self.config.voltage_output(),
-      time_offset: self.config.time_offset(),
       time_zone: self.config.time_zone()
     }, function (data) {
       self.saveTimerSuccess(true);

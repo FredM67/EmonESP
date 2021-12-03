@@ -189,6 +189,4 @@ void config_load_v1_settings()
   EEPROM_read_int(EEPROM_TIMER_STOP2_START, timer_stop2);
 
   EEPROM_read_int(EEPROM_VOLTAGE_OUTPUT_START, voltage_output);
-
-  EEPROM_read_int(EEPROM_TIME_OFFSET_START, time_offset);
 }

@@ -34,8 +34,6 @@ String getTime();
 String getDate();
 int getDateAsInt();
 
-void setTimeOffset();
-
 #ifndef WIFI_LED
 #define WIFI_LED 0
 #endif
