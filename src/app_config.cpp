@@ -10,6 +10,9 @@
 #include <EEPROM.h> // Save config settings
 #include <ConfigJson.h>
 
+#include <time.h>
+#include <sys/time.h>
+
 #define EEPROM_SIZE 4096
 #define CHECKSUM_SEED 128
 
@@ -75,6 +78,9 @@ bool rotation = false;
 
 int time_offset = 0;
 
+// Time
+String time_zone;
+
 uint32_t flags;
 
 void config_changed(String name);
@@ -93,6 +99,9 @@ ConfigOpt *opts[] =
 
         // Advanced settings, 4
         new ConfigOptDefenition<String>(node_name, node_name_default, "hostname", "hn"),
+
+        // Time
+        new ConfigOptDefenition<String>(time_zone, "", "time_zone", "tz"),
 
         // EMONCMS SERVER strings, 5
         new ConfigOptDefenition<String>(emoncms_server, "emoncms.org", "emoncms_server", "es"),
@@ -172,7 +181,11 @@ void config_changed(String name)
 {
   DBUGF("%s changed", name.c_str());
 
-  if (name.equals(F("flags")))
+  if (name == "time_zone")
+  {
+    config_set_timezone(time_zone);
+  }
+  else if (name.equals(F("flags")))
   {
     if (mqtt_connected() != config_mqtt_enabled())
     {
@@ -289,7 +302,7 @@ void config_save_admin(String user, String pass)
   config.commit();
 }
 
-void config_save_timer(int start1, int stop1, int start2, int stop2, int startsb, int stopsb, int qvoltage_output, int qtime_offset)
+void config_save_timer(int start1, int stop1, int start2, int stop2, int startsb, int stopsb, int qvoltage_output, int qtime_offset, String qtime_zone)
 {
   config.set(F("timer_start1"), start1);
   config.set(F("timer_stop1"), stop1);
@@ -299,7 +312,10 @@ void config_save_timer(int start1, int stop1, int start2, int stop2, int startsb
   config.set(F("time_offset"), qtime_offset);
   config.set(F("standby_start"), startsb);
   config.set(F("standby_stop"), stopsb);
+  config.set(F("time_zone"), qtime_zone);
   config.commit();
+
+  config_set_timezone(qtime_zone);
 }
 
 void config_save_voltage_output(int qvoltage_output, int save_to_eeprom)
@@ -311,6 +327,19 @@ void config_save_voltage_output(int qvoltage_output, int save_to_eeprom)
     config.set(F("voltage_output"), qvoltage_output);
     config.commit();
   }
+}
+
+void config_set_timezone(String tz)
+{
+  const char *set_tz = tz.c_str();
+  const char *split_pos = strchr(set_tz, '|');
+  if (split_pos)
+  {
+    set_tz = split_pos;
+  }
+
+  setenv("TZ", set_tz, 1);
+  tzset();
 }
 
 void config_save_advanced(String hostname)

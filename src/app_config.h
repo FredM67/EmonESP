@@ -72,6 +72,9 @@ extern int timer_start2;
 extern int timer_stop2;
 extern int time_offset;
 
+// Time
+extern String time_zone;
+
 extern int standby_start;
 extern int standby_stop;
 
@@ -152,7 +155,7 @@ extern void config_save_admin(String user, String pass);
 // -------------------------------------------------------------------
 // Save the admin/web interface details
 // -------------------------------------------------------------------
-extern void config_save_timer(int start1, int stop1, int start2, int stop2, int startsb, int stopsb, int voltage_output, int qtime_offset);
+extern void config_save_timer(int start1, int stop1, int start2, int stop2, int startsb, int stopsb, int voltage_output, int qtime_offset, String qtime_zone);
 extern void config_save_voltage_output(int qvoltage_output, int save_to_eeprom);
 // -------------------------------------------------------------------
 // Save the Wifi details
@@ -178,6 +181,8 @@ extern void config_save_rotation(bool mode);
 // Reset the config back to defaults
 // -------------------------------------------------------------------
 extern void config_reset();
+
+void config_set_timezone(String tz);
 
 void config_set(const char *name, uint32_t val);
 void config_set(const char *name, String val);
