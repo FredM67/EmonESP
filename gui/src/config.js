@@ -29,6 +29,11 @@ function scaleString(string, scale, precision) {
   return tmpval.toFixed(precision);
 }
 
+function dateString(string) {
+  var tmpval = parseInt(string) * 1e3;
+  return new Date(tmpval);
+}
+
 function addcolon(t) {
   t = new String(t);
   if (t.length < 3) {

@@ -46,6 +46,7 @@ module.exports = {
         "/savemqtt",
         "/saveadmin",
         "/savetimer",
+        "/savetimezone",
         "/reset",
         "/restart",
         "/scan",

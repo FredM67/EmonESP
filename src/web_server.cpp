@@ -410,8 +410,7 @@ void handleSaveTimer(AsyncWebServerRequest *request)
                     request->arg(F("standby_start")).toInt(),
                     request->arg(F("standby_stop")).toInt(),
 
-                    request->arg(F("voltage_output")).toInt(),
-                    request->arg(F("time_zone")));
+                    request->arg(F("voltage_output")).toInt());
 
   mqtt_publish("out/timer", String(timer_start1) + " " + String(timer_stop1) + " " + String(timer_start2) + " " + String(timer_stop2) + " " + String(voltage_output));
 
@@ -419,6 +418,26 @@ void handleSaveTimer(AsyncWebServerRequest *request)
   response->print(F("saved"));
   request->send(response);
 }
+
+// -------------------------------------------------------------------
+// Save timer
+// url: /savetimezone
+// -------------------------------------------------------------------
+void handleSaveTZ(AsyncWebServerRequest *request)
+{
+  AsyncResponseStream *response;
+  if (false == requestPreProcess(request, response, CONTENT_TYPE_TEXT))
+  {
+    return;
+  }
+
+  config_save_time_zone(request->arg(F("time_zone")));
+
+  response->setCode(200);
+  response->print(F("saved"));
+  request->send(response);
+}
+
 
 void handleSetVout(AsyncWebServerRequest *request)
 {
@@ -570,6 +589,7 @@ void handleConfigGet(AsyncWebServerRequest *request)
   // EmonESP Config
   doc[F("espflash")] = ESPAL.getFlashChipSize();
   doc[F("version")] = currentfirmware;
+  doc[F("buildtime")] = CURRENT_TIME;
   doc[F("node_description")] = node_description;
   doc[F("node_type")] = node_type;
 
@@ -1051,6 +1071,7 @@ void web_server_setup()
   server.on("/savemqtt", handleSaveMqtt);
   server.on("/saveadmin", handleSaveAdmin);
   server.on("/savetimer", handleSaveTimer);
+  server.on("/savetimezone", handleSaveTZ);
 
   server.on("/reset", handleRst);
   server.on("/restart", handleRestart);

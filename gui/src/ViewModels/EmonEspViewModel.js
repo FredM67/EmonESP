@@ -181,8 +181,7 @@ function EmonEspViewModel(baseHost, basePort, baseProtocol) {
       timer_stop2: self.config.timer_stop2(),
       standby_start: self.config.standby_start(),
       standby_stop: self.config.standby_stop(),
-      voltage_output: self.config.voltage_output(),
-      time_zone: self.config.time_zone()
+      voltage_output: self.config.voltage_output()
     }, function (data) {
       self.saveTimerSuccess(true);
       setTimeout(function () {
@@ -192,6 +191,28 @@ function EmonEspViewModel(baseHost, basePort, baseProtocol) {
       alert("Failed to save Timer config");
     }).always(function () {
       self.saveTimerFetching(false);
+    });
+  };
+
+  // -----------------------------------------------------------------------
+  // Event: Timer save
+  // -----------------------------------------------------------------------
+  self.saveTZFetching = ko.observable(false);
+  self.saveTZSuccess = ko.observable(false);
+  self.saveTZ = function () {
+    self.saveTZFetching(true);
+    self.saveTZSuccess(false);
+    $.post(baseEndpoint + "/savetimezone", {
+      time_zone: self.config.time_zone()
+    }, function (data) {
+      self.saveTZSuccess(true);
+      setTimeout(function () {
+        self.saveTZSuccess(false);
+      }, 5000);
+    }).fail(function () {
+      alert("Failed to save Time Zone config");
+    }).always(function () {
+      self.saveTZFetching(false);
     });
   };
 

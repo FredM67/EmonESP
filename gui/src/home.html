@@ -20,8 +20,11 @@
     <div class="box">
       <h1 data-bind="text: config.node_name">emonESP</h1>
       <h3 data-bind="text: config.node_description">WiFi Emoncms Link</h3>
+      <div style="text-align: center;padding-top: 5px;"><b>Date & time now:</b> <span
+          data-bind="text: status.date">1234-56-78</span>
+        <span> </span> <span data-bind="text: status.time">12:34:56</span>
+      </div>
     </div>
-
     <div class="loading" data-bind="visible: !initialised()">
       Loading, please wait...
     </div>
@@ -128,10 +131,6 @@
               id="timer"
               data-bind="click: ctrlMode.bind($data,'Timer'), css: (status.ctrl_mode()=='Timer'?(status.ctrl_state()==1?'green':'red'):'')">Timer</button>
           </div>
-          <p><b>Date & time now:</b> <span data-bind="text: status.date">1234-56-78</span>
-            <span> </span>
-            <span data-bind="text: status.time">12:34:56</span>
-          </p>
           <div><b>Period 1</b></div>
           <div style="display:inline-block; margin:10px">Start: <input type="time"
               data-bind="textInput: config.f_timer_start1"></div>
@@ -149,13 +148,6 @@
           <p data-bind="visible: config.node_type()=='hpmon'">
             Flow temperature: <input type="text" data-bind="textInput: config.flowT">
           </p>
-          <p>
-            <b>Time zone:</b><br />
-            <select data-bind="options: zones.zones,
-                                                optionsText: 'name',
-                                                optionsValue: 'value',
-                                                value: time_zone"></select>
-          </p>
           <button
             data-bind="click: saveTimer, text: (saveTimerFetching() ? 'Saving' : (saveTimerSuccess() ? 'Saved' : 'Save')), disable: saveTimerFetching">Save</button>
           <br><br>
@@ -165,71 +157,58 @@
       <div id="nine" data-bind="visible: status.isWifiClient() && config.node_type()=='pvrouter'">
         <h2 onclick="toggle('control_router');"><span>+</span> Control</h2>
         <div id="control_router" class="itembody-wrapper" style="display:none; text-align:center">
-          <b>Date & time now:</b> <span data-bind="text: status.date">1234-56-78</span>
-          <span> </span>
-          <span data-bind="text: status.time">12:34:56</span>
-          <br>
-          <div class="itembody-wrapper" style="box-sizing: content-box; background-color: #eaeaea; margin-top: 5px;">
-            <h4 onclick="toggle('control_diversion');"><span>+</span> Diversion</h4>
-            <div id="control_diversion" class="sub-itembody-wrapper" style="display:none; text-align:center;">
-              <div class="btn-group">
-                <button id="on_divert"
-                  data-bind="click: divertMode.bind($data,'On'), css: (status.divert_mode()=='On'?'green':'')">On</button>
-                <button id="off_divert"
-                  data-bind="click: divertMode.bind($data,'Off'), css: (status.divert_mode()=='Off'?'red':'')">Off</button>
-                <button id="standby"
-                  data-bind="click: divertMode.bind($data,'Standby'), css: (status.divert_mode()=='Standby'?(status.divert_state()==1?'green':'red'):'')">Diversion</button>
-              </div>
-              <br>
-              <div><b>Period of standby (no diversion)</b></div>
-              <div style="display:inline-block; margin:10px">Start: <input type="date"
-                  data-bind="value: config.f_standby_start"></div>
-              <div style="display:inline-block; margin:10px">Stop: <input type="date"
-                  data-bind="value: config.f_standby_stop"></div>
+          <h4 onclick="toggle('control_diversion');"><span>+</span> Diversion</h4>
+          <div id="control_diversion" class="sub-itembody-wrapper" style="display:none; text-align:center;">
+            <div class="btn-group">
+              <button id="on_divert"
+                data-bind="click: divertMode.bind($data,'On'), css: (status.divert_mode()=='On'?'green':'')">On</button>
+              <button id="off_divert"
+                data-bind="click: divertMode.bind($data,'Off'), css: (status.divert_mode()=='Off'?'red':'')">Off</button>
+              <button id="standby"
+                data-bind="click: divertMode.bind($data,'Standby'), css: (status.divert_mode()=='Standby'?(status.divert_state()==1?'green':'red'):'')">Diversion</button>
             </div>
-            <h4 onclick="toggle('control_override');"><span>+</span> Override</h4>
-            <div id="control_override" class="sub-itembody-wrapper" style="display:none; text-align:center">
-              <div class="btn-group">
-                <button id="on_override"
-                  data-bind="click: ctrlMode.bind($data,'On'), css: (status.ctrl_mode()=='On'?'green':'')">On</button>
-                <button id="off_override"
-                  data-bind="click: ctrlMode.bind($data,'Off'), css: (status.ctrl_mode()=='Off'?'red':'')">Off</button>
-                <button id="timer"
-                  data-bind="click: ctrlMode.bind($data,'Timer'), css: (status.ctrl_mode()=='Timer'?(status.ctrl_state()==1?'green':'red'):'')">Timer</button>
-              </div>
-              <br>
-              <div data-bind="visible: config.node_type()=='pvrouter'"><b>Weekdays</b></div>
-              <div style="display:inline-block; margin:10px">Start: <input type="time" step="300"
-                  data-bind="textInput: config.f_timer_start1"></div>
-              <div style="display:inline-block; margin:10px">Stop: <input type="time" step="300"
-                  data-bind="textInput: config.f_timer_stop1"></div>
-              <br>
-              <div data-bind="visible: config.node_type()=='pvrouter'"><b>Weekend</b></div>
-              <div style="display:inline-block; margin:10px">Start: <input type="time" step="300"
-                  data-bind="textInput: config.f_timer_start2"></div>
-              <div style="display:inline-block; margin:10px">Stop: <input type="time" step="300"
-                  data-bind="textInput: config.f_timer_stop2"></div>
-            </div>
-            <h4 onclick="toggle('control_rotation');"><span>+</span> Rotation</h4>
-            <div id="control_rotation" class="sub-itembody-wrapper" style="display:none; text-align:center">
-              <div class="btn-group">
-                <button id="on_rotation"
-                  data-bind="click: rotationMode.bind($data,true), css: (config.rotation()?'green':'')">On</button>
-                <button id="off_rotation"
-                  data-bind="click: rotationMode.bind($data,false), css: (!config.rotation()?'red':'')">Off</button>
-              </div>
-            </div>
-            <p data-bind="visible: config.node_type()=='hpmon'">
-              Flow temperature: <input type="text" data-bind="textInput: config.flowT">
-            </p>
-            <p>
-              <b>Time zone:</b><br />
-              <select data-bind="options: zones.zones,
-                                    optionsText: 'name',
-                                    optionsValue: 'value',
-                                    value: time_zone"></select>
-            </p>
+            <br>
+            <div><b>Period of standby (no diversion)</b></div>
+            <div style="display:inline-block; margin:10px">Start: <input type="date"
+                data-bind="value: config.f_standby_start"></div>
+            <div style="display:inline-block; margin:10px">Stop: <input type="date"
+                data-bind="value: config.f_standby_stop"></div>
           </div>
+          <h4 onclick="toggle('control_override');"><span>+</span> Override</h4>
+          <div id="control_override" class="sub-itembody-wrapper" style="display:none; text-align:center">
+            <div class="btn-group">
+              <button id="on_override"
+                data-bind="click: ctrlMode.bind($data,'On'), css: (status.ctrl_mode()=='On'?'green':'')">On</button>
+              <button id="off_override"
+                data-bind="click: ctrlMode.bind($data,'Off'), css: (status.ctrl_mode()=='Off'?'red':'')">Off</button>
+              <button id="timer"
+                data-bind="click: ctrlMode.bind($data,'Timer'), css: (status.ctrl_mode()=='Timer'?(status.ctrl_state()==1?'green':'red'):'')">Timer</button>
+            </div>
+            <br>
+            <div data-bind="visible: config.node_type()=='pvrouter'"><b>Weekdays</b></div>
+            <div style="display:inline-block; margin:10px">Start: <input type="time" step="300"
+                data-bind="textInput: config.f_timer_start1"></div>
+            <div style="display:inline-block; margin:10px">Stop: <input type="time" step="300"
+                data-bind="textInput: config.f_timer_stop1"></div>
+            <br>
+            <div data-bind="visible: config.node_type()=='pvrouter'"><b>Weekend</b></div>
+            <div style="display:inline-block; margin:10px">Start: <input type="time" step="300"
+                data-bind="textInput: config.f_timer_start2"></div>
+            <div style="display:inline-block; margin:10px">Stop: <input type="time" step="300"
+                data-bind="textInput: config.f_timer_stop2"></div>
+          </div>
+          <h4 onclick="toggle('control_rotation');"><span>+</span> Rotation</h4>
+          <div id="control_rotation" class="sub-itembody-wrapper" style="display:none; text-align:center">
+            <div class="btn-group">
+              <button id="on_rotation"
+                data-bind="click: rotationMode.bind($data,true), css: (config.rotation()?'green':'')">On</button>
+              <button id="off_rotation"
+                data-bind="click: rotationMode.bind($data,false), css: (!config.rotation()?'red':'')">Off</button>
+            </div>
+          </div>
+          <p data-bind="visible: config.node_type()=='hpmon'">
+            Flow temperature: <input type="text" data-bind="textInput: config.flowT">
+          </p>
           <br>
           <button
             data-bind="click: saveTimer, text: (saveTimerFetching() ? 'Saving' : (saveTimerSuccess() ? 'Saved' : 'Save')), disable: saveTimerFetching">Save</button>
@@ -237,118 +216,147 @@
         </div>
       </div>
       <!--//////////////////////////////////////////////////////////////////////////////////-->
-      <div id="two">
-        <h2 onclick="toggle('emoncms');"><span>+</span> Emoncms</h2>
-        <div id="emoncms" class="itembody-wrapper" style="display:none">
-          <p>
-            <input type="checkbox" id="emoncms_enabled" data-bind="checked: config.emoncms_enabled" />
-            <label for="emoncms_enabled"><b>Enable Emoncms</b></label>
-          </p>
-          <p data-bind="visible: config.emoncms_enabled">
-            <b>Emoncms Server*:</b><br>
-            <input type="text" data-bind="textInput: config.emoncms_server"><br />
-            <span>
-              e.g '<a href="https://emoncms.org">emoncms.org</a>',
-              'emonpi', or '192.168.1.4'
-            </span><br />
-          </p>
-          <p data-bind="visible: config.emoncms_enabled">
-            <b>Emoncms Path:</b><br>
-            <input type="text" data-bind="textInput: config.emoncms_path"><br />
-            <span>
-              e.g '/emoncms', or empty for emoncms.org
-            </span><br />
-          </p>
-          <p data-bind="visible: config.emoncms_enabled">
-            <b>Emoncms Node Name*:</b><br>
-            <input type="text" data-bind="textInput: config.emoncms_node">
-          </p>
-          <p data-bind="visible: config.emoncms_enabled">
-            <b>Write apikey*:</b><br>
-            <input type="password" autocapitalize="none"
-              data-bind="textInput: emoncmsApiKey.value, attr: { type: emoncmsApiKey.show() ? 'text' : 'password' }" /><br />
-            <span>
-              <input id="emoncmsApiKey" type="checkbox" data-bind="checked: emoncmsApiKey.show" />
-              <label for="emoncmsApiKey">Show password</label>
-            </span>
-          </p>
-          <p data-bind="visible: config.emoncms_enabled">
-            <b>SSL SHA-1 Fingerprint:</b><br>
-            <input type="text" data-bind="textInput: config.emoncms_fingerprint"><br>
-            <br>HTTPS will be enabled if present e.g:<br>
-            <br>
-            <span class="small-text">
-              7D:82:15:BE:D7:BC:72:58:87:7D:8E:40:D4:80:BA:1A:9F:8B:8D:DA
-              </s[ac]><br>
-          </p>
-          <p>
-            <button
-              data-bind="click: saveEmonCms, text: (saveEmonCmsFetching() ? 'Saving' : (saveEmonCmsSuccess() ? 'Saved' : 'Save')), disable: saveEmonCmsFetching">Save</button>
-            <span data-bind="visible: config.emoncms_enabled">
-              <b>&nbsp; Connected:&nbsp;<span
-                  data-bind="text: 1 === status.emoncms_connected() ? 'Yes' : 'No'"></span></b>
-              <span data-bind="visible: 1 === status.emoncms_connected()"></br></br><b>&nbsp; Successful
-                  messages:&nbsp;<span
-                    data-bind="text: status.packets_success()+'/'+status.packets_sent()+' '+((status.packets_success()/status.packets_sent())*100)+'%'"></span></b></span>
-            </span>
-          </p>
-        </div>
-      </div>
-      <!--//////////////////////////////////////////////////////////////////////////////////-->
-      <div id="three">
-        <h2 onclick="toggle('mqtt');"><span>+</span> MQTT</h2>
-        <div id="mqtt" class="itembody-wrapper" style="display:none">
-          <p>
-            <input type="checkbox" id="mqtt_enabled" data-bind="checked: config.mqtt_enabled" />
-            <label for="mqtt_enabled"><b>Enable MQTT</b></label>
-          </p>
-          <p data-bind="visible: config.mqtt_enabled">
-            <b>MQTT Server*:</b><br>
-            <input data-bind="textInput: config.mqtt_server" type="text"><br />
-            <span class="small-text">e.g 'emonpi', 'test.mosquitto.org' or '192.168.1.4'</span><br>
-          </p>
-          <p data-bind="visible: config.mqtt_enabled">
-            <b>MQTT Port:</b><br>
-            <input data-bind="textInput: config.mqtt_port" type="text"><br />
-            <span class="small-text">e.g 1883</span><br>
-          </p>
-          <p data-bind="visible: config.mqtt_enabled">
-            <b>MQTT Base-topic*:</b><br>
-            <input data-bind="textInput: config.mqtt_topic" type="text"><br />
-            <span class="small-text">
-              e.g 'emon/emonesp', 'emon/heatpump'<br>
-              Data will be published to sub topic e.g. 'emon/emonesp/CT1'
-            </span>
-          </p>
-          <p data-bind="visible: config.mqtt_enabled">
-            <b>MQTT Feed-name prefix:</b><br>
-            <input data-bind="textInput: config.mqtt_feed_prefix" type="text"><br />
-            <span class="small-text">
-              Value to prefix the feed names with: &#60;base-topic&#62;/&#60;prefix&#62;&#60;feed-name&#62;. Required
-              for posting to AdafruitIO.
-              Leave blank for no prefix.
-            </span>
-          </p>
-          <p data-bind="visible: config.mqtt_enabled">
-            <b>Username:</b><br>
-            <input data-bind="textInput: config.mqtt_user" type="text"><br />
-            <span class="small-text">Leave blank for authentication</span>
-          </p>
-          <p data-bind="visible: config.mqtt_enabled">
-            <b>Password:</b><br>
-            <input type="password" autocapitalize="none"
-              data-bind="textInput: mqttPassword.value, attr: { type: mqttPassword.show() ? 'text' : 'password' }" /><br />
-            <span>
-              <input id="mqttPassword" type="checkbox" data-bind="checked: mqttPassword.show" />
-              <label for="mqttPassword">Show password</label>
-            </span>
-            <span class="small-text">Leave blank for no authentication</span><br>
-          </p>
-          <p>
-            <button
-              data-bind="click: saveMqtt, text: (saveMqttFetching() ? 'Saving' : (saveMqttSuccess() ? 'Saved' : 'Save')), disable: saveMqttFetching">Save</button>
-            <b>&nbsp; Connected:&nbsp;<span data-bind="text: 1 === status.mqtt_connected() ? 'Yes' : 'No'"></span></b>
-          </p>
+      <div id="ten">
+        <h2 onclick="toggle('settings');"><span>+</span> Settings</h2>
+        <div id="settings" class="itembody-wrapper" style="display:none">
+          <div id="ten">
+            <h4 onclick="toggle('time_settings');"><span>+</span> Time</h4>
+            <div id="time_settings" class="sub-itembody-wrapper" style="display:none">
+              <b>Time zone:</b> <select data-bind="options: zones.zones,
+                                                  optionsText: 'name',
+                                                  optionsValue: 'value',
+                                                  value: time_zone"></select>
+              <p>
+                <button
+                  data-bind="click: saveTZ, text: (saveTZFetching() ? 'Saving' : (saveTZSuccess() ? 'Saved' : 'Save')), disable: saveTZFetching">Save</button>
+              </p>
+            </div>
+          </div>
+          <!--//////////////////////////////////////////////////////////////////////////////////-->
+          <div id="ten">
+            <h4 onclick="toggle('emoncms');"><span>+</span> Emoncms</h4>
+            <div id="emoncms" class="sub-itembody-wrapper" style="display:none">
+              <div>
+                <b>Enabled: </b>
+                <label class="switch">
+                  <input type="checkbox" data-bind="checked: config.emoncms_enabled">
+                  <div class="slider round"></div>
+                </label>
+              </div>
+              <div data-bind="visible: config.emoncms_enabled">
+                <p>
+                  <b>Emoncms Server*:</b><br>
+                  <input type="text" data-bind="textInput: config.emoncms_server"><br />
+                  <span>
+                    e.g '<a href="https://emoncms.org">emoncms.org</a>',
+                    'emonpi', or '192.168.1.4'
+                  </span><br />
+                </p>
+                <p>
+                  <b>Emoncms Path:</b><br>
+                  <input type="text" data-bind="textInput: config.emoncms_path"><br />
+                  <span>
+                    e.g '/emoncms', or empty for emoncms.org
+                  </span><br />
+                </p>
+                <p>
+                  <b>Emoncms Node Name*:</b><br>
+                  <input type="text" data-bind="textInput: config.emoncms_node">
+                </p>
+                <p>
+                  <b>Write apikey*:</b><br>
+                  <input type="password" autocapitalize="none"
+                    data-bind="textInput: emoncmsApiKey.value, attr: { type: emoncmsApiKey.show() ? 'text' : 'password' }" /><br />
+                  <span>
+                    <input id="emoncmsApiKey" type="checkbox" data-bind="checked: emoncmsApiKey.show" />
+                    <label for="emoncmsApiKey">Show password</label>
+                  </span>
+                </p>
+                <p>
+                  <b>SSL SHA-1 Fingerprint:</b><br>
+                  <input type="text" data-bind="textInput: config.emoncms_fingerprint"><br>
+                  <br>HTTPS will be enabled if present e.g:<br>
+                  <br>
+                  <span class="small-text"> 7D:82:15:BE:D7:BC:72:58:87:7D:8E:40:D4:80:BA:1A:9F:8B:8D:DA </span><br>
+                </p>
+              </div>
+              <p>
+                <button
+                  data-bind="click: saveEmonCms, text: (saveEmonCmsFetching() ? 'Saving' : (saveEmonCmsSuccess() ? 'Saved' : 'Save')), disable: saveEmonCmsFetching">Save</button>
+                <span data-bind="visible: config.emoncms_enabled">
+                  <b>&nbsp; Connected:&nbsp;<span
+                      data-bind="text: 1 === status.emoncms_connected() ? 'Yes' : 'No'"></span></b>
+                  <span data-bind="visible: 1 === status.emoncms_connected()"></br></br><b>&nbsp; Successful
+                      messages:&nbsp;<span
+                        data-bind="text: status.packets_success()+'/'+status.packets_sent()+' '+((status.packets_success()/status.packets_sent())*100)+'%'"></span></b></span>
+                </span>
+              </p>
+            </div>
+          </div>
+          <!--//////////////////////////////////////////////////////////////////////////////////-->
+          <div id="ten">
+            <h4 onclick="toggle('mqtt');"><span>+</span> MQTT</h4>
+            <div id="mqtt" class="sub-itembody-wrapper" style="display:none">
+              <div>
+                <b>Enabled: </b>
+                <label class="switch">
+                  <input type="checkbox" data-bind="checked: config.mqtt_enabled">
+                  <div class="slider round"></div>
+                </label>
+              </div>
+              <div data-bind="visible: config.mqtt_enabled">
+                <p>
+                  <b>MQTT Server*:</b><br>
+                  <input data-bind="textInput: config.mqtt_server" type="text"><br />
+                  <span class="small-text">e.g 'emonpi', 'test.mosquitto.org' or '192.168.1.4'</span><br>
+                </p>
+                <p>
+                  <b>MQTT Port:</b><br>
+                  <input data-bind="textInput: config.mqtt_port" type="text"><br />
+                  <span class="small-text">e.g 1883</span><br>
+                </p>
+                <p>
+                  <b>MQTT Base-topic*:</b><br>
+                  <input data-bind="textInput: config.mqtt_topic" type="text"><br />
+                  <span class="small-text">
+                    e.g 'emon/emonesp', 'emon/heatpump'<br>
+                    Data will be published to sub topic e.g. 'emon/emonesp/CT1'
+                  </span>
+                </p>
+                <p>
+                  <b>MQTT Feed-name prefix:</b><br>
+                  <input data-bind="textInput: config.mqtt_feed_prefix" type="text"><br />
+                  <span class="small-text">
+                    Value to prefix the feed names with: &#60;base-topic&#62;/&#60;prefix&#62;&#60;feed-name&#62;.
+                    Required
+                    for posting to AdafruitIO.
+                    Leave blank for no prefix.
+                  </span>
+                </p>
+                <p>
+                  <b>Username:</b><br>
+                  <input data-bind="textInput: config.mqtt_user" type="text"><br />
+                  <span class="small-text">Leave blank for authentication</span>
+                </p>
+                <p>
+                  <b>Password:</b><br>
+                  <input type="password" autocapitalize="none"
+                    data-bind="textInput: mqttPassword.value, attr: { type: mqttPassword.show() ? 'text' : 'password' }" /><br />
+                  <span>
+                    <input id="mqttPassword" type="checkbox" data-bind="checked: mqttPassword.show" />
+                    <label for="mqttPassword">Show password</label>
+                  </span>
+                  <span class="small-text">Leave blank for no authentication</span><br>
+                </p>
+              </div>
+              <p>
+                <button
+                  data-bind="click: saveMqtt, text: (saveMqttFetching() ? 'Saving' : (saveMqttSuccess() ? 'Saved' : 'Save')), disable: saveMqttFetching">Save</button>
+                <span data-bind="visible: config.mqtt_enabled"><b>&nbsp; Connected:&nbsp;<span
+                      data-bind="text: 1 === status.mqtt_connected() ? 'Yes' : 'No'"></span></b></span>
+              </p>
+            </div>
+          </div>
         </div>
       </div>
       <!--//////////////////////////////////////////////////////////////////////////////////-->
@@ -410,6 +418,7 @@
           <p><b>Flash Size:</b> <span data-bind="text: scaleString(config.espflash(), 1024, 0) + 'K'"></span></p>
           <p><b>Version:</b> <a href="https://github.com/openenergymonitor/EmonESP/releases">v<span
                 data-bind="text: config.version()"></span></a></p>
+          <p><b>Build time:</b> <span data-bind="text: dateString(config.buildtime())"></span></p>
           <button id="restart">Restart</button>
           <button id="reset">Factory Reset</button>
         </div>

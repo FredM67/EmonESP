@@ -23,7 +23,7 @@ body {
     margin-bottom: 40px;
 }
 
-#one,#two,#three,#four,#five,#six,#seven,#eight,#nine {
+#one,#two,#three,#four,#five,#six,#seven,#eight,#nine,#ten {
     background-color: #f1f1f1;
     box-sizing: border-box;
     margin: 5px 5px 5px 5px;
@@ -99,7 +99,6 @@ td {
 p {
     padding-top: 10px;
 }
-
 
 a {
   text-decoration: none;
@@ -189,7 +188,6 @@ button:disabled {
 }
 
 /*----------------*/
-
 #footer-small-scrn {
     width: 100%;
     font-weight: bold;
@@ -331,4 +329,62 @@ button:disabled {
   width: 1%;
   height: 30px;
   background-color: #0699fa;
+}
+
+/* Nice slider switch */
+.switch {
+  position: relative;
+  display: inline-block;
+  width: 40px;
+  height: 24px;
+  vertical-align: -40%;
+}
+
+.switch input {display:none;}
+
+.slider {
+  position: absolute;
+  cursor: pointer;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: #ccc;
+  -webkit-transition: .4s;
+  transition: .4s;
+}
+
+.slider:before {
+  position: absolute;
+  content: "";
+  height: 16px;
+  width: 16px;
+  left: 4px;
+  bottom: 4px;
+  background-color: white;
+  -webkit-transition: .4s;
+  transition: .4s;
+}
+
+input:checked + .slider {
+  background-color: #008080;
+}
+
+input:focus + .slider {
+  box-shadow: 0 0 1px #008080;
+}
+
+input:checked + .slider:before {
+  -webkit-transform: translateX(16px);
+  -ms-transform: translateX(16px);
+  transform: translateX(16px);
+}
+
+/* Rounded sliders */
+.slider.round {
+  border-radius: 12px;
+}
+
+.slider.round:before {
+  border-radius: 50%;
 }

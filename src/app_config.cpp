@@ -300,7 +300,7 @@ void config_save_admin(const String &user, const String &pass)
   config.commit();
 }
 
-void config_save_timer(int start1, int stop1, int start2, int stop2, int startsb, int stopsb, int qvoltage_output, const String &qtime_zone)
+void config_save_timer(int start1, int stop1, int start2, int stop2, int startsb, int stopsb, int qvoltage_output)
 {
   config.set(F("timer_start1"), start1);
   config.set(F("timer_stop1"), stop1);
@@ -309,6 +309,11 @@ void config_save_timer(int start1, int stop1, int start2, int stop2, int startsb
   config.set(F("voltage_output"), qvoltage_output);
   config.set(F("standby_start"), startsb);
   config.set(F("standby_stop"), stopsb);
+  config.commit();
+}
+
+void config_save_time_zone(const String &qtime_zone)
+{
   config.set(F("time_zone"), qtime_zone);
   config.commit();
 

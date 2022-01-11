@@ -21,6 +21,7 @@ function ConfigViewModel() {
     "www_username": "",
     "www_password": "",
     "espflash": "",
+    "buildtime": "",
     "version": "0.0.0",
     "timer_start1": "",
     "timer_stop1": "",

@@ -154,7 +154,8 @@ extern void config_save_admin(const String &user, const String &pass);
 // -------------------------------------------------------------------
 // Save the admin/web interface details
 // -------------------------------------------------------------------
-extern void config_save_timer(int start1, int stop1, int start2, int stop2, int startsb, int stopsb, int voltage_output, const String &qtime_zone);
+extern void config_save_timer(int start1, int stop1, int start2, int stop2, int startsb, int stopsb, int voltage_output);
+extern void config_save_time_zone(const String &qtime_zone);
 extern void config_save_voltage_output(int qvoltage_output, int save_to_eeprom);
 // -------------------------------------------------------------------
 // Save the Wifi details
