@@ -42,7 +42,7 @@ extern void mqtt_loop();
 // -------------------------------------------------------------------
 // Generic Publish to MQTT
 // -------------------------------------------------------------------
-extern void mqtt_publish(String topic, String data);
+extern void mqtt_publish(const String &topic, const String &data);
 
 // -------------------------------------------------------------------
 // Publish values to MQTT

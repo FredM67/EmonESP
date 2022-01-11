@@ -120,7 +120,7 @@ startAP() {
   DEBUG.print(F("AP IP Address: "));
   DEBUG.println(tmpStr);
   ipaddress = tmpStr;
-    
+
   apClients = 0;
 }
 
@@ -134,7 +134,7 @@ startClient()
   DEBUG.println(esid.c_str());
   //DEBUG.print(F(" PSK:"));
   //DEBUG.println(epass.c_str());
-  
+
   client_disconnects = 0;
 
   WiFi.begin(esid.c_str(), epass.c_str());
@@ -151,7 +151,7 @@ static void wifi_start()
     startAP();
   }
   // 2) else try and connect to the configured network
-  else 
+  else
   {
     startClient();
   }
@@ -223,7 +223,7 @@ void wifi_onStationModeDisconnected(const WiFiEventStationModeDisconnected &even
   WIFI_DISCONNECT_REASON_HANDSHAKE_TIMEOUT == event.reason ? F("WIFI_DISCONNECT_REASON_HANDSHAKE_TIMEOUT") :
   F("UNKNOWN"));
 
-  client_disconnects++;
+  ++client_disconnects;
 
   MDNS.end();
 }
@@ -253,7 +253,7 @@ wifi_setup() {
   static auto _onStationModeGotIP = WiFi.onStationModeGotIP(wifi_onStationModeGotIP);
   static auto _onStationModeDisconnected = WiFi.onStationModeDisconnected(wifi_onStationModeDisconnected);
   static auto _onSoftAPModeStationConnected = WiFi.onSoftAPModeStationConnected([](const WiFiEventSoftAPModeStationConnected &event) {
-    apClients++;
+    ++apClients;
   });
   static auto _onSoftAPModeStationDisconnected = WiFi.onSoftAPModeStationDisconnected([](const WiFiEventSoftAPModeStationDisconnected &event) {
     apClients--;
@@ -262,7 +262,7 @@ wifi_setup() {
   wifi_start();
 }
 
-void wifi_loop() 
+void wifi_loop()
 {
   Profile_Start(wifi_loop);
 

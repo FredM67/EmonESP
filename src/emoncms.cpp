@@ -48,13 +48,13 @@ unsigned long emoncms_connection_error_count = 0;
 
 const char *post_path = "/input/post?";
 
-static void emoncms_result(bool success, String message)
+static void emoncms_result(bool success, const String &message)
 {
   StaticJsonDocument<128> event;
 
   if (success)
   {
-    packets_success++;
+    ++packets_success;
     emoncms_connection_error_count = 0;
   }
   else
@@ -93,7 +93,7 @@ void emoncms_publish(JsonDocument &data)
 
     DBUGVAR(url);
 
-    packets_sent++;
+    ++packets_sent;
 
     // Send data to Emoncms server
     String result = "";

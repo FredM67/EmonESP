@@ -62,23 +62,25 @@ bool input_get(JsonDocument &data)
     {
       DEBUG.printf_P(PSTR("Got '%s'\n"), line.c_str());
 
-      for(int i = 0; i < len; i++)
+      for(int i = 0; i < len; ++i)
       {
         String name = "";
 
         // Get the name
         while (i < len && line[i] != ':') {
-          name += line[i++];
+          name += line[i];
+          ++i;
         }
 
-        if (i++ >= len) {
+        if (++i > len) {
           break;
         }
 
         // Get the value
         String value = "";
         while (i < len && line[i] != ','){
-          value += line[i++];
+          value += line[i];
+          ++i;
         }
 
         DBUGVAR(name);

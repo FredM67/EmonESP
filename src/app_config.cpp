@@ -13,8 +13,8 @@
 #include <time.h>
 #include <sys/time.h>
 
-#define EEPROM_SIZE 4096
-#define CHECKSUM_SEED 128
+constexpr size_t EEPROM_SIZE{4096};
+constexpr uint32_t CHECKSUM_SEED{128};
 
 static int getNodeId()
 {
@@ -81,7 +81,7 @@ String time_zone;
 
 uint32_t flags;
 
-void config_changed(String name);
+void config_changed(const String &name);
 
 ConfigOptDefenition<uint32_t> flagsOpt = ConfigOptDefenition<uint32_t>(flags, 0, "flags", "f");
 
@@ -170,11 +170,13 @@ void config_load_settings()
   if (!config.load())
   {
     DBUGF("No JSON config found, trying v1 settings");
+#ifndef PVROUTER
     config_load_v1_settings();
+#endif
   }
 }
 
-void config_changed(String name)
+void config_changed(const String &name)
 {
   DBUGF("%s changed", name.c_str());
 
@@ -237,7 +239,7 @@ void config_set(const char *name, uint32_t val)
 {
   config.set(name, val);
 }
-void config_set(const char *name, String val)
+void config_set(const char *name, const String &val)
 {
   config.set(name, val);
 }
@@ -250,8 +252,7 @@ void config_set(const char *name, double val)
   config.set(name, val);
 }
 
-void config_save_emoncms(bool enable, String server, String path, String node, String apikey,
-                         String fingerprint)
+void config_save_emoncms(bool enable, const String &server, const String &path, const String &node, const String &apikey, const String &fingerprint)
 {
   uint32_t newflags = flags & ~CONFIG_SERVICE_EMONCMS;
   if (enable)
@@ -268,7 +269,7 @@ void config_save_emoncms(bool enable, String server, String path, String node, S
   config.commit();
 }
 
-void config_save_mqtt(bool enable, String server, int port, String topic, String prefix, String user, String pass)
+void config_save_mqtt(bool enable, const String &server, int port, const String &topic, const String &prefix, const String &user, const String &pass)
 {
   uint32_t newflags = flags & ~CONFIG_SERVICE_MQTT;
   if (enable)
@@ -286,20 +287,20 @@ void config_save_mqtt(bool enable, String server, int port, String topic, String
   config.commit();
 }
 
-void config_save_mqtt_server(String server)
+void config_save_mqtt_server(const String &server)
 {
   config.set(F("mqtt_server"), server);
   config.commit();
 }
 
-void config_save_admin(String user, String pass)
+void config_save_admin(const String &user, const String &pass)
 {
   config.set(F("www_username"), user);
   config.set(F("www_password"), pass);
   config.commit();
 }
 
-void config_save_timer(int start1, int stop1, int start2, int stop2, int startsb, int stopsb, int qvoltage_output, String qtime_zone)
+void config_save_timer(int start1, int stop1, int start2, int stop2, int startsb, int stopsb, int qvoltage_output, const String &qtime_zone)
 {
   config.set(F("timer_start1"), start1);
   config.set(F("timer_stop1"), stop1);
@@ -325,7 +326,7 @@ void config_save_voltage_output(int qvoltage_output, int save_to_eeprom)
   }
 }
 
-void config_set_timezone(String tz)
+void config_set_timezone(const String &tz)
 {
   const char *set_tz = tz.c_str();
   const char *split_pos = strchr(set_tz, '|');
@@ -338,13 +339,13 @@ void config_set_timezone(String tz)
   tzset();
 }
 
-void config_save_advanced(String hostname)
+void config_save_advanced(const String &hostname)
 {
   config.set(F("hostname"), hostname);
   config.commit();
 }
 
-void config_save_wifi(String qsid, String qpass)
+void config_save_wifi(const String &qsid, const String &qpass)
 {
   config.set(F("ssid"), qsid);
   config.set(F("pass"), qpass);
@@ -357,13 +358,13 @@ void config_save_flags(uint32_t newFlags)
   config.commit();
 }
 
-void config_save_ctrl(String mode)
+void config_save_ctrl(const String &mode)
 {
   config.set(F("ctrl_mode"), mode);
   config.commit();
 }
 
-void config_save_divert(String mode)
+void config_save_divert(const String &mode)
 {
   config.set(F("divert_mode"), mode);
   config.commit();

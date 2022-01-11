@@ -35,7 +35,7 @@ char incomingPacket[255];  // buffer for incoming packets
 
 byte mqtt_auth_transfer_flag = 0;
 unsigned long last_auth_request_attempt = 0;
- 
+
 void auth_request() {
 
     DEBUG.println(F("Fetching MQTT Auth"));
@@ -49,14 +49,14 @@ void auth_request() {
     String mqtt_basetopic = "";
     String mqtt_portnum = "";
     int stringpart = 0;
-    
+
     // This needs to be done with an encrypted request otherwise credentials are shared as plain text
     result = get_http(mqtt_server.c_str(), url);
     if (result != F("request registered")) {
-        for (int i=0; i<result.length(); i++) {
+        for (int i=0; i<result.length(); ++i) {
             char c = result[i];
-            if (c==':') { 
-                stringpart++; 
+            if (c==':') {
+                ++stringpart;
             } else {
                 if (stringpart==0) mqtt_username += c;
                 if (stringpart==1) mqtt_password += c;
@@ -70,7 +70,7 @@ void auth_request() {
             config_save_mqtt(true, mqtt_server.c_str(), mqtt_port, mqtt_basetopic, "", mqtt_username, mqtt_password);
             DEBUG.println(F("MQTT Settings:")); DEBUG.println(result);
         }
-        
+
         if (stringpart==3) {
             mqtt_auth_transfer_flag = 2;
             config_save_mqtt(true, mqtt_server.c_str() ,mqtt_portnum.toInt(), mqtt_basetopic, "", mqtt_username, mqtt_password);
@@ -86,7 +86,7 @@ void auth_setup() {
 }
 
 void auth_loop() {
-    // UDP Broadcast receive 
+    // UDP Broadcast receive
   int packetSize = Udp.parsePacket();
   if (packetSize)
   {
@@ -101,7 +101,7 @@ void auth_loop() {
 
     if (strcmp(incomingPacket,"emonpi.local")==0) {
       if (mqtt_server!=Udp.remoteIP().toString().c_str()) {
-        config_save_mqtt_server(Udp.remoteIP().toString().c_str());        
+        config_save_mqtt_server(Udp.remoteIP().toString().c_str());
         DBUGF("MQTT Server Updated");
         mqtt_auth_transfer_flag = 1;
         auth_request();

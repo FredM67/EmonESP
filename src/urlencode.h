@@ -3,7 +3,7 @@
 
 #include <Arduino.h>
 
-String urldecode(String str);
-String urlencode(String str);
+String urldecode(const String &str);
+String urlencode(const String &str);
 
 #endif // urlencode_h

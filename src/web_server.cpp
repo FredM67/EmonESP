@@ -74,7 +74,7 @@ const char _CONTENT_TYPE_SVG[] PROGMEM = "image/svg+xml";
 // Get running firmware version from build tag environment variable
 #define TEXTIFY(A) #A
 #define ESCAPEQUOTE(A) TEXTIFY(A)
-String currentfirmware = ESCAPEQUOTE(BUILD_TAG);
+const String currentfirmware{ESCAPEQUOTE(BUILD_TAG)};
 
 void dumpRequest(AsyncWebServerRequest *request)
 {
@@ -96,14 +96,14 @@ void dumpRequest(AsyncWebServerRequest *request)
 
   int headers = request->headers();
   int i;
-  for (i = 0; i < headers; i++)
+  for (i = 0; i < headers; ++i)
   {
     AsyncWebHeader *h = request->getHeader(i);
     DBUGF("_HEADER[%s]: %s", h->name().c_str(), h->value().c_str());
   }
 
   int params = request->params();
-  for (i = 0; i < params; i++)
+  for (i = 0; i < params; ++i)
   {
     AsyncWebParameter *p = request->getParam(i);
     if (p->isFile())
@@ -692,6 +692,7 @@ void handleUpdateCheck(AsyncWebServerRequest *request)
   }
 
   DBUGLN("Running: " + currentfirmware);
+
   // Get latest firmware version number
   // BUG/HACK/TODO: This will block, should be done in the loop call
   String latestfirmware = ota_get_latest_version();
@@ -788,7 +789,7 @@ void handleUpdatePost(AsyncWebServerRequest *request)
 extern "C" uint32_t _SPIFFS_start;
 extern "C" uint32_t _SPIFFS_end;
 
-void handleUpdateUpload(AsyncWebServerRequest *request, String filename, size_t index, uint8_t *data, size_t len, bool final)
+void handleUpdateUpload(AsyncWebServerRequest *request, const String &filename, size_t index, uint8_t *data, size_t len, bool final)
 {
   if (!index)
   {
@@ -915,8 +916,7 @@ void handleRotation(AsyncWebServerRequest *request)
   request->send(response);
 }
 
-    void
-    handleDebug(AsyncWebServerRequest *request, StreamSpy &spy)
+void handleDebug(AsyncWebServerRequest *request, StreamSpy &spy)
 {
   AsyncResponseStream *response;
   if (false == requestPreProcess(request, response, CONTENT_TYPE_TEXT))

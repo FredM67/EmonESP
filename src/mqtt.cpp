@@ -31,11 +31,11 @@
 #include "espal.h"
 
 #include <Arduino.h>
-#include <PubSubClient.h>             // MQTT https://github.com/knolleary/pubsubclient PlatformIO lib: 89
+#include <PubSubClient.h> // MQTT https://github.com/knolleary/pubsubclient PlatformIO lib: 89
 #include <WiFiClient.h>
 
-WiFiClient espClient;                 // Create client for MQTT
-PubSubClient mqttclient(espClient);   // Create client for MQTT
+WiFiClient espClient;               // Create client for MQTT
+PubSubClient mqttclient(espClient); // Create client for MQTT
 
 static long nextMqttReconnectAttempt = 0;
 static unsigned long mqttRestartTime = 0;
@@ -50,87 +50,112 @@ int i = 0;
 // -------------------------------------------------------------------
 // MQTT Control callback for WIFI Relay and Sonoff smartplug
 // -------------------------------------------------------------------
-static void mqtt_msg_callback(char *topic, byte *payload, unsigned int length) {
+static void mqtt_msg_callback(char *topic, byte *payload, unsigned int length)
+{
 
   String topicstr = String(topic);
   String payloadstr = String((char *)payload);
-  payloadstr = payloadstr.substring(0,length);
+  payloadstr = payloadstr.substring(0, length);
 
   DBUGF("Message arrived topic:[%s] payload: [%s]", topic, payload);
 
   // --------------------------------------------------------------------------
   // State
   // --------------------------------------------------------------------------
-  if (topicstr.compareTo(mqtt_topic+"/"+node_name+"/in/ctrlmode")==0) {
+  if (topicstr.compareTo(mqtt_topic + "/" + node_name + "/in/ctrlmode") == 0)
+  {
     DEBUG.print(F("Status: "));
-    if (payloadstr.compareTo("2")==0) {
+    if (payloadstr.compareTo("2") == 0)
+    {
       ctrl_mode = "Timer";
-    } else if (payloadstr.compareTo("1")==0) {
+    }
+    else if (payloadstr.compareTo("1") == 0)
+    {
       ctrl_mode = "On";
-    } else if (payloadstr.compareTo("0")==0) {
+    }
+    else if (payloadstr.compareTo("0") == 0)
+    {
       ctrl_mode = "Off";
-    } else if (payloadstr.compareTo("Timer")==0) {
+    }
+    else if (payloadstr.compareTo("Timer") == 0)
+    {
       ctrl_mode = "Timer";
-    } else if (payloadstr.compareTo("On")==0) {
+    }
+    else if (payloadstr.compareTo("On") == 0)
+    {
       ctrl_mode = "On";
-    } else if (payloadstr.compareTo("Off")==0) {
+    }
+    else if (payloadstr.compareTo("Off") == 0)
+    {
       ctrl_mode = "Off";
-    } else {
+    }
+    else
+    {
       ctrl_mode = "Off";
     }
     DEBUG.println(ctrl_mode);
-  // --------------------------------------------------------------------------
-  // Timer
-  // --------------------------------------------------------------------------
-  } else if (topicstr.compareTo(mqtt_topic+"/"+node_name+"/in/timer")==0) {
+    // --------------------------------------------------------------------------
+    // Timer
+    // --------------------------------------------------------------------------
+  }
+  else if (topicstr.compareTo(mqtt_topic + "/" + node_name + "/in/timer") == 0)
+  {
     DEBUG.print(F("Timer: "));
-    if (payloadstr.length()==9) {
-      String tstart = payloadstr.substring(0,4);
-      String tstop = payloadstr.substring(5,9);
+    if (payloadstr.length() == 9)
+    {
+      String tstart = payloadstr.substring(0, 4);
+      String tstop = payloadstr.substring(5, 9);
       timer_start1 = tstart.toInt();
       timer_stop1 = tstop.toInt();
-      DEBUG.println(tstart+" "+tstop);
+      DEBUG.println(tstart + " " + tstop);
     }
-    if (payloadstr.length()==19) {
-      String tstart1 = payloadstr.substring(0,4);
-      String tstop1 = payloadstr.substring(5,9);
+    if (payloadstr.length() == 19)
+    {
+      String tstart1 = payloadstr.substring(0, 4);
+      String tstop1 = payloadstr.substring(5, 9);
       timer_start1 = tstart1.toInt();
       timer_stop1 = tstop1.toInt();
-      String tstart2 = payloadstr.substring(10,14);
-      String tstop2 = payloadstr.substring(15,19);
+      String tstart2 = payloadstr.substring(10, 14);
+      String tstop2 = payloadstr.substring(15, 19);
       timer_start2 = tstart2.toInt();
       timer_stop2 = tstop2.toInt();
-      DEBUG.println(tstart1+":"+tstop1+" "+tstart2+":"+tstop2);
+      DEBUG.println(tstart1 + ":" + tstop1 + " " + tstart2 + ":" + tstop2);
     }
-  // --------------------------------------------------------------------------
-  // Vout
-  // --------------------------------------------------------------------------
-  } else if (topicstr.compareTo(mqtt_topic+"/"+node_name+"/in/vout")==0) {
+    // --------------------------------------------------------------------------
+    // Vout
+    // --------------------------------------------------------------------------
+  }
+  else if (topicstr.compareTo(mqtt_topic + "/" + node_name + "/in/vout") == 0)
+  {
     DEBUG.print(F("Vout: "));
     voltage_output = payloadstr.toInt();
     DEBUG.println(voltage_output);
-  // --------------------------------------------------------------------------
-  // FlowT
-  // --------------------------------------------------------------------------
-  } else if (topicstr.compareTo(mqtt_topic+"/"+node_name+"/in/flowT")==0) {
+    // --------------------------------------------------------------------------
+    // FlowT
+    // --------------------------------------------------------------------------
+  }
+  else if (topicstr.compareTo(mqtt_topic + "/" + node_name + "/in/flowT") == 0)
+  {
     DEBUG.print(F("FlowT: "));
     float flow = payloadstr.toFloat();
-    voltage_output = (int) (flow - 7.14)/0.0371;
-    DEBUG.println(String(flow)+" vout:"+String(voltage_output));
-  // --------------------------------------------------------------------------
-  // Return device state
-  // --------------------------------------------------------------------------
-  } else if (topicstr.compareTo(mqtt_topic+"/"+node_name+"/in/state")==0) {
+    voltage_output = (int)(flow - 7.14) / 0.0371;
+    DEBUG.println(String(flow) + " vout:" + String(voltage_output));
+    // --------------------------------------------------------------------------
+    // Return device state
+    // --------------------------------------------------------------------------
+  }
+  else if (topicstr.compareTo(mqtt_topic + "/" + node_name + "/in/state") == 0)
+  {
     DEBUG.println(F("State: "));
 
     String s = "{";
-    s += "\"ip\":\""+ipaddress+"\",";
+    s += "\"ip\":\"" + ipaddress + "\",";
     // s += "\"time\":\"" + String(getTime()) + "\",";
     s += "\"ctrlmode\":\"" + String(ctrl_mode) + "\",";
-    s += "\"timer\":\"" + String(timer_start1)+" "+String(timer_stop1)+" "+String(timer_start2)+" "+String(timer_stop2) + "\",";
+    s += "\"timer\":\"" + String(timer_start1) + " " + String(timer_stop1) + " " + String(timer_start2) + " " + String(timer_stop2) + "\",";
     s += "\"vout\":\"" + String(voltage_output) + "\"";
     s += "}";
-    mqtt_publish("out/state",s);
+    mqtt_publish("out/state", s);
   }
 }
 
@@ -140,23 +165,25 @@ static void mqtt_msg_callback(char *topic, byte *payload, unsigned int length) {
 bool mqtt_connect()
 {
   mqttclient.setServer(mqtt_server.c_str(), mqtt_port);
-  mqttclient.setCallback(mqtt_msg_callback); //function to be called when mqtt msg is received on subscribed topic
+  mqttclient.setCallback(mqtt_msg_callback); // function to be called when mqtt msg is received on subscribed topic
 
   DEBUG.print(F("MQTT Connecting to..."));
   DEBUG.println(mqtt_server.c_str());
 
   String strID = String(ESP.getChipId());
-  if (mqttclient.connect(strID.c_str(), mqtt_user.c_str(), mqtt_pass.c_str())) {  // Attempt to connect
+  if (mqttclient.connect(strID.c_str(), mqtt_user.c_str(), mqtt_pass.c_str()))
+  { // Attempt to connect
     DEBUG.println(F("MQTT connected"));
     mqtt_publish("describe", node_type);
 
     String subscribe_topic = mqtt_topic + "/" + node_name + "/in/#";
     mqttclient.subscribe(subscribe_topic.c_str());
-
-  } else {
+  }
+  else
+  {
     DEBUG.print(F("MQTT failed: "));
     DEBUG.println(mqttclient.state());
-    return(0);
+    return (0);
   }
   return (1);
 }
@@ -164,9 +191,10 @@ bool mqtt_connect()
 // -------------------------------------------------------------------
 // Publish to MQTT
 // -------------------------------------------------------------------
-void mqtt_publish(String topic_p2, String data)
+void mqtt_publish(const String &topic_p2, const String &data)
 {
-  if(!config_mqtt_enabled() || !mqttclient.connected()) {
+  if (!config_mqtt_enabled() || !mqttclient.connected())
+  {
     return;
   }
 
@@ -185,12 +213,14 @@ void mqtt_publish(JsonDocument &data)
 {
   Profile_Start(mqtt_publish);
 
-  if(!config_mqtt_enabled() || !mqttclient.connected()) {
+  if (!config_mqtt_enabled() || !mqttclient.connected())
+  {
     return;
   }
 
   JsonObject root = data.as<JsonObject>();
-  for (JsonPair kv : root) {
+  for (JsonPair kv : root)
+  {
     String topic = mqtt_topic + "/";
     topic += kv.key().c_str();
     String val = kv.value().as<String>();
@@ -214,26 +244,31 @@ void mqtt_loop()
   Profile_Start(mqtt_loop);
 
   // Do we need to restart MQTT?
-  if(mqttRestartTime > 0 && millis() > mqttRestartTime)
+  if (mqttRestartTime > 0 && millis() > mqttRestartTime)
   {
     mqttRestartTime = 0;
-    if (mqttclient.connected()) {
+    if (mqttclient.connected())
+    {
       DBUGF("Disconnecting MQTT");
       mqttclient.disconnect();
     }
     nextMqttReconnectAttempt = 0;
   }
 
-  if(config_mqtt_enabled())
+  if (config_mqtt_enabled())
   {
-    if (!mqttclient.connected()) {
+    if (!mqttclient.connected())
+    {
       long now = millis();
       // try and reconnect every x seconds
-      if (now > nextMqttReconnectAttempt) {
+      if (now > nextMqttReconnectAttempt)
+      {
         nextMqttReconnectAttempt = now + MQTT_CONNECT_TIMEOUT;
         mqtt_connect(); // Attempt to reconnect
       }
-    } else {
+    }
+    else
+    {
       // if MQTT connected
       mqttclient.loop();
     }

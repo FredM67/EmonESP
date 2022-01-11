@@ -92,12 +92,12 @@ extern bool rotation;
 // 24-bits of Flags
 extern uint32_t flags;
 
-#define CONFIG_SERVICE_EMONCMS  (1 << 0)
-#define CONFIG_SERVICE_MQTT     (1 << 1)
-#define CONFIG_CTRL_UPDATE      (1 << 2)
-#define CONFIG_CTRL_STATE       (1 << 3)
-#define CONFIG_DIVERT_UPDATE    (1 << 4)
-#define CONFIG_DIVERT_STATE     (1 << 5)
+constexpr uint32_t CONFIG_SERVICE_EMONCMS{1 << 0};
+constexpr uint32_t CONFIG_SERVICE_MQTT{1 << 1};
+constexpr uint32_t CONFIG_CTRL_UPDATE{1 << 2};
+constexpr uint32_t CONFIG_CTRL_STATE{1 << 3};
+constexpr uint32_t CONFIG_DIVERT_UPDATE{1 << 4};
+constexpr uint32_t CONFIG_DIVERT_STATE{1 << 5};
 
 inline bool config_emoncms_enabled()
 {
@@ -138,38 +138,38 @@ extern void config_load_v1_settings();
 // -------------------------------------------------------------------
 // Save the EmonCMS server details
 // -------------------------------------------------------------------
-extern void config_save_emoncms(bool enable, String server, String path, String node, String apikey, String fingerprint);
+extern void config_save_emoncms(bool enable, const String &server, const String &path, const String &node, const String &apikey, const String &fingerprint);
 
 // -------------------------------------------------------------------
 // Save the MQTT broker details
 // -------------------------------------------------------------------
-extern void config_save_mqtt(bool enable, String server, int port, String topic, String prefix, String user, String pass);
-extern void config_save_mqtt_server(String server);
+extern void config_save_mqtt(bool enable, const String &server, int port, const String &topic, const String &prefix, const String &user, const String &pass);
+extern void config_save_mqtt_server(const String &server);
 
 // -------------------------------------------------------------------
 // Save the admin/web interface details
 // -------------------------------------------------------------------
-extern void config_save_admin(String user, String pass);
+extern void config_save_admin(const String &user, const String &pass);
 
 // -------------------------------------------------------------------
 // Save the admin/web interface details
 // -------------------------------------------------------------------
-extern void config_save_timer(int start1, int stop1, int start2, int stop2, int startsb, int stopsb, int voltage_output, String qtime_zone);
+extern void config_save_timer(int start1, int stop1, int start2, int stop2, int startsb, int stopsb, int voltage_output, const String &qtime_zone);
 extern void config_save_voltage_output(int qvoltage_output, int save_to_eeprom);
 // -------------------------------------------------------------------
 // Save the Wifi details
 // -------------------------------------------------------------------
-extern void config_save_wifi(String qsid, String qpass);
+extern void config_save_wifi(const String &qsid, const String &qpass);
 
 // -------------------------------------------------------------------
 // Save the Control Mode
 // -------------------------------------------------------------------
-extern void config_save_ctrl(String mode);
+extern void config_save_ctrl(const String &mode);
 
 // -------------------------------------------------------------------
 // Save the Diversion Mode
 // -------------------------------------------------------------------
-extern void config_save_divert(String mode);
+extern void config_save_divert(const String &mode);
 
 // -------------------------------------------------------------------
 // Save the Rotation Mode
@@ -181,10 +181,10 @@ extern void config_save_rotation(bool mode);
 // -------------------------------------------------------------------
 extern void config_reset();
 
-void config_set_timezone(String tz);
+void config_set_timezone(const String &tz);
 
 void config_set(const char *name, uint32_t val);
-void config_set(const char *name, String val);
+void config_set(const char *name, const String &val);
 void config_set(const char *name, bool val);
 void config_set(const char *name, double val);
 

@@ -3,7 +3,7 @@
 
 #include <Arduino.h>
 
-void event_send(String event);
+void event_send(const String &event);
 void event_send(JsonDocument &event);
 
 #endif

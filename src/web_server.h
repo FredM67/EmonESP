@@ -57,7 +57,7 @@ extern const char _CONTENT_TYPE_SVG[];
 #define CONTENT_TYPE_SVG FPSTR(_CONTENT_TYPE_SVG)
 
 extern AsyncWebServer server;
-extern String currentfirmware;
+extern const String currentfirmware;
 
 extern void web_server_setup();
 extern void web_server_loop();

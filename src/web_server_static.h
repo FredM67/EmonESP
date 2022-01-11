@@ -19,7 +19,7 @@ class StaticFileWebHandler: public AsyncWebHandler
     bool _getFile(AsyncWebServerRequest *request, StaticFile **file = NULL);
   protected:
   public:
-    StaticFileWebHandler();
+    StaticFileWebHandler() = default;
     virtual bool canHandle(AsyncWebServerRequest *request) override final;
     virtual void handleRequest(AsyncWebServerRequest *request) override final;
 };

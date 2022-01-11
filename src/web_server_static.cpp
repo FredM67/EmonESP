@@ -13,9 +13,10 @@
 // Static files
 #include "web_static/web_server_static_files.h"
 
-#define ARRAY_LENGTH(x) (sizeof(x)/sizeof((x)[0]))
+template <typename _Tp, size_t _Nm>
+constexpr size_t size(const _Tp (&/*__array*/)[_Nm]) noexcept { return _Nm; }
 
-#define IS_ALIGNED(x)   (0 == ((uint32_t)(x) & 0x3))
+#define IS_ALIGNED(x) (0 == ((uint32_t)(x)&0x3))
 
 // Pages
 static const char _HOME_PAGE[] PROGMEM = "/home.html";
@@ -30,27 +31,26 @@ static const char _BUILD_TIME[] PROGMEM = __DATE__ " " __TIME__ " GMT";
 static const char _HEADER_IF_MODIFIED_SINCE[] PROGMEM = "If-Modified-Since";
 #define HEADER_IF_MODIFIED_SINCE FPSTR(_HEADER_IF_MODIFIED_SINCE)
 
-StaticFileWebHandler::StaticFileWebHandler()
-{
-}
-
 bool StaticFileWebHandler::_getFile(AsyncWebServerRequest *request, StaticFile **file)
 {
   // Remove the found uri
   String path = request->url();
-  if(path == "/") {
-//    path = String(wifi_mode_is_ap_only() ? WIFI_PAGE : HOME_PAGE);
+  if (path == "/")
+  {
+    //    path = String(wifi_mode_is_ap_only() ? WIFI_PAGE : HOME_PAGE);
     path = String(HOME_PAGE);
   }
 
   DBUGF("Looking for %s", path.c_str());
 
-  for(uint32_t i = 0; i < ARRAY_LENGTH(staticFiles); i++) {
-    if(path == staticFiles[i].filename)
+  for (uint32_t i = 0; i < size(staticFiles); ++i)
+  {
+    if (path == staticFiles[i].filename)
     {
       DBUGF("Found %s %d@%p", staticFiles[i].filename, staticFiles[i].length, staticFiles[i].data);
 
-      if(file) {
+      if (file)
+      {
         *file = &staticFiles[i];
       }
       return true;
@@ -87,51 +87,57 @@ void StaticFileWebHandler::handleRequest(AsyncWebServerRequest *request)
     request->_tempObject = NULL;
 
     // Are we authenticated
-    if(wifi_mode_is_sta() &&
-      _username != "" && _password != "" &&
-      false == request->authenticate(_username.c_str(), _password.c_str()))
+    if (wifi_mode_is_sta() &&
+        _username != "" && _password != "" &&
+        false == request->authenticate(_username.c_str(), _password.c_str()))
     {
       request->requestAuthentication(node_name.c_str());
       return;
     }
 
-    if (request->header(HEADER_IF_MODIFIED_SINCE).equals(BUILD_TIME)) {
+    if (request->header(HEADER_IF_MODIFIED_SINCE).equals(BUILD_TIME))
+    {
       request->send(304);
       return;
     }
 
     AsyncWebServerResponse *response = new StaticFileResponse(200, file);
-    //response->addHeader("Content-Encoding", "gzip");
+    // response->addHeader("Content-Encoding", "gzip");
     response->addHeader("Last-Modified", BUILD_TIME);
     request->send(response);
-  } else {
+  }
+  else
+  {
     request->send(404);
   }
 }
 
-StaticFileResponse::StaticFileResponse(int code, StaticFile *content){
+StaticFileResponse::StaticFileResponse(int code, StaticFile *content)
+{
   _code = code;
   _content = content;
   _contentType = String(FPSTR(content->type));
   _contentLength = content->length;
   ptr = content->data;
-  addHeader("Connection","close");
+  addHeader("Connection", "close");
 }
 
 size_t StaticFileResponse::write(AsyncWebServerRequest *request)
 {
   size_t total = 0;
   size_t written = 0;
-  do {
+  do
+  {
     written = writeData(request);
-    if(written > 0) {
+    if (written > 0)
+    {
       total += written;
     }
-  } while(written > 0);
+  } while (written > 0);
 
-  if(total > 0)
+  if (total > 0)
   {
-    //DBUGF("%p: Sending %d", request, total);
+    // DBUGF("%p: Sending %d", request, total);
 
     // How should failures to send be handled?
     request->client()->send();
@@ -145,102 +151,109 @@ size_t StaticFileResponse::writeData(AsyncWebServerRequest *request)
   size_t space = request->client()->space();
 
   DBUGF("%p: StaticFileResponse::write: %s %d %d@%p, free %d", request,
-    RESPONSE_SETUP == _state ? "RESPONSE_SETUP" :
-    RESPONSE_HEADERS == _state ? "RESPONSE_HEADERS" :
-    RESPONSE_CONTENT == _state ? "RESPONSE_CONTENT" :
-    RESPONSE_WAIT_ACK == _state ? "RESPONSE_WAIT_ACK" :
-    RESPONSE_END == _state ? "RESPONSE_END" :
-    RESPONSE_FAILED == _state ? "RESPONSE_FAILED" :
-    "UNKNOWN",
-    space, length, ptr, ESP.getFreeHeap());
+        RESPONSE_SETUP == _state ? "RESPONSE_SETUP" : RESPONSE_HEADERS == _state ? "RESPONSE_HEADERS"
+                                                  : RESPONSE_CONTENT == _state   ? "RESPONSE_CONTENT"
+                                                  : RESPONSE_WAIT_ACK == _state  ? "RESPONSE_WAIT_ACK"
+                                                  : RESPONSE_END == _state       ? "RESPONSE_END"
+                                                  : RESPONSE_FAILED == _state    ? "RESPONSE_FAILED"
+                                                                                 : "UNKNOWN",
+        space, length, ptr, ESP.getFreeHeap());
 
-  if(length > 0 && space > 0)
+  if (length > 0 && space > 0)
   {
     size_t written = 0;
 
     char buffer[128];
     uint32_t copy = sizeof(buffer);
-    if(copy > length) {
+    if (copy > length)
+    {
       copy = length;
     }
-    if(copy > space) {
+    if (copy > space)
+    {
       copy = space;
     }
-    //DBUGF("%p: write %d@%p", request, copy, ptr);
-    if(IS_ALIGNED(ptr)) {
+    // DBUGF("%p: write %d@%p", request, copy, ptr);
+    if (IS_ALIGNED(ptr))
+    {
       uint32_t *end = (uint32_t *)(ptr + copy);
-      for(uint32_t *src = (uint32_t *)ptr, *dst = (uint32_t *)buffer;
-          src < end; src++, dst++)
+      for (uint32_t *src = (uint32_t *)ptr, *dst = (uint32_t *)buffer;
+           src < end; ++src, ++dst)
       {
         *dst = *src;
       }
-    } else {
+    }
+    else
+    {
       memcpy_P(buffer, ptr, copy);
     }
 
     written = request->client()->add(buffer, copy);
-    if(written > 0) {
+    if (written > 0)
+    {
       _writtenLength += written;
       ptr += written;
       length -= written;
-    } else {
+    }
+    else
+    {
       DBUGF("Failed to write data");
     }
 
-/*
-    bool aligned = RESPONSE_CONTENT == _state;
-    if(aligned && (!IS_ALIGNED(ptr) || length < 32))
-    {
-      char buffer[32];
-      uint32_t copy = sizeof(buffer) - ((uint32_t)ptr & 0x00000003); // byte aligned mask
-      if(copy > length) {
-        copy = length;
-      }
-      DBUGF("None aligned write %d@%p", copy, ptr);
-      memcpy_P(buffer, ptr, copy);
+    /*
+        bool aligned = RESPONSE_CONTENT == _state;
+        if(aligned && (!IS_ALIGNED(ptr) || length < 32))
+        {
+          char buffer[32];
+          uint32_t copy = sizeof(buffer) - ((uint32_t)ptr & 0x00000003); // byte aligned mask
+          if(copy > length) {
+            copy = length;
+          }
+          DBUGF("None aligned write %d@%p", copy, ptr);
+          memcpy_P(buffer, ptr, copy);
 
-      written = request->client()->write(buffer, copy);
-      if(written > 0) {
-        _writtenLength += written;
-        ptr += written;
-        length -= written;
-      } else {
-        DBUGF("Failed to write data");
-      }
-    }
+          written = request->client()->write(buffer, copy);
+          if(written > 0) {
+            _writtenLength += written;
+            ptr += written;
+            length -= written;
+          } else {
+            DBUGF("Failed to write data");
+          }
+        }
 
-    if(!aligned || IS_ALIGNED(ptr))
-    {
-      size_t outLen = length;
-      if(outLen > space) {
-        outLen = space;
-      }
-      DBUGF("Aligned write %d@%p", outLen, ptr);
-      written = request->client()->write(ptr, outLen);
-      if(written > 0) {
-        _writtenLength += written;
-        ptr += written;
-        length -= written;
-      } else {
-        DBUGF("Failed to write data");
-      }
-    }
-*/
+        if(!aligned || IS_ALIGNED(ptr))
+        {
+          size_t outLen = length;
+          if(outLen > space) {
+            outLen = space;
+          }
+          DBUGF("Aligned write %d@%p", outLen, ptr);
+          written = request->client()->write(ptr, outLen);
+          if(written > 0) {
+            _writtenLength += written;
+            ptr += written;
+            length -= written;
+          } else {
+            DBUGF("Failed to write data");
+          }
+        }
+    */
 
-    if(0 == length)
+    if (0 == length)
     {
-      switch(_state)
+      switch (_state)
       {
-        case RESPONSE_HEADERS:
-          _state = RESPONSE_CONTENT;
-          ptr = _content->data;
-          length = _content->length;
-          break;
-        case RESPONSE_CONTENT:
-          _state = RESPONSE_WAIT_ACK;
-          break;
-        default:
-          break;
+      case RESPONSE_HEADERS:
+        _state = RESPONSE_CONTENT;
+        ptr = _content->data;
+        length = _content->length;
+        break;
+      case RESPONSE_CONTENT:
+        _state = RESPONSE_WAIT_ACK;
+        break;
+      default:
+        break;
       }
     }
 
@@ -250,7 +263,8 @@ size_t StaticFileResponse::writeData(AsyncWebServerRequest *request)
   return 0;
 }
 
-void StaticFileResponse::_respond(AsyncWebServerRequest *request){
+void StaticFileResponse::_respond(AsyncWebServerRequest *request)
+{
   _state = RESPONSE_HEADERS;
   _header = _assembleHead(request->version());
 
@@ -261,7 +275,8 @@ void StaticFileResponse::_respond(AsyncWebServerRequest *request){
   write(request);
 }
 
-size_t StaticFileResponse::_ack(AsyncWebServerRequest *request, size_t len, uint32_t time){
+size_t StaticFileResponse::_ack(AsyncWebServerRequest *request, size_t len, uint32_t time)
+{
   _ackedLength += len;
   return write(request);
 }
