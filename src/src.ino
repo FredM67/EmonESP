@@ -34,15 +34,15 @@
 #include "http.h"
 #include "autoauth.h"
 
-#include <time.h>     // time() ctime()
-#include <sys/time.h> // struct timeval
+#include <time.h>      // time() ctime()
+#include <sys/time.h>  // struct timeval
 
-#define TZ 1      // (utc+) TZ in hours
-#define DST_MN 60 // use 60mn for summer time in some countries
+#define TZ 1       // (utc+) TZ in hours
+#define DST_MN 60  // use 60mn for summer time in some countries
 
-#define TZ_MN ((TZ)*60)
-#define TZ_SEC ((TZ)*3600)
-#define DST_SEC ((DST_MN)*60)
+#define TZ_MN ((TZ) *60)
+#define TZ_SEC ((TZ) *3600)
+#define DST_SEC ((DST_MN) *60)
 
 WiFiUDP ntpUDP;
 unsigned long last_ctrl_update = 0;
@@ -58,17 +58,16 @@ static unsigned long mem_info_update = 0;
 #ifdef PVROUTER
 #include <ModbusTCP.h>
 
-constexpr uint16_t TARIFF_REG{60006}; // Modbus Offset for Tariff switch
-IPAddress PAC_ECS(192, 168, 1, 102);  // Address of Modbus Slave device
+constexpr uint16_t TARIFF_REG{60006};  // Modbus Offset for Tariff switch
+IPAddress PAC_ECS(192, 168, 1, 102);   // Address of Modbus Slave device
 
-ModbusTCP mb; // ModbusTCP object
+ModbusTCP mb;  // ModbusTCP object
 #endif
 
 // -------------------------------------------------------------------
 // SETUP
 // -------------------------------------------------------------------
-void setup()
-{
+void setup() {
   debug_setup();
 
   DEBUG.println();
@@ -142,10 +141,9 @@ void setup()
 #endif
 
   start_mem = last_mem = ESP.getFreeHeap();
-} // end setup
+}  // end setup
 
-void led_flash(int ton, int toff)
-{
+void led_flash(int ton, int toff) {
   digitalWrite(WIFI_LED, WIFI_LED_ON_STATE);
   delay(ton);
   digitalWrite(WIFI_LED, WIFI_LED_ON_STATE);
@@ -155,29 +153,26 @@ void led_flash(int ton, int toff)
 // -------------------------------------------------------------------
 // LOOP
 // -------------------------------------------------------------------
-void loop()
-{
-  if (millis() > mem_info_update)
-  {
+void loop() {
+  if (millis() > mem_info_update) {
     mem_info_update = millis() + 2000;
     uint32_t current = ESP.getFreeHeap();
-    int32_t diff = (int32_t)(last_mem - current);
-    if (diff != 0)
-    {
+    int32_t diff = (int32_t) (last_mem - current);
+    if (diff != 0) {
       DEBUG.printf("Free memory %u - diff %d %d\n", current, diff, start_mem - current);
       last_mem = current;
     }
   }
 
-/*   if (time_offset_previous != time_offset)
-  {
-    if (time_offset == 65535)
-      time_offset = 0;
+  /*   if (time_offset_previous != time_offset)
+    {
+      if (time_offset == 65535)
+        time_offset = 0;
 
-    configTime(time_offset * 60, DST_SEC, "pool.ntp.org");
+      configTime(time_offset * 60, DST_SEC, "pool.ntp.org");
 
-    time_offset_previous == time_offset;
-  } */
+      time_offset_previous == time_offset;
+    } */
 
   ota_loop();
   web_server_loop();
@@ -186,11 +181,9 @@ void loop()
   StaticJsonDocument<512> data;
   bool gotInput = input_get(data);
 
-  if (wifi_client_connected())
-  {
+  if (wifi_client_connected()) {
     mqtt_loop();
-    if (gotInput)
-    {
+    if (gotInput) {
       emoncms_publish(data);
       event_send(data);
     }
@@ -201,12 +194,11 @@ void loop()
   // --------------------------------------------------------------
   // CONTROL UPDATE
   // --------------------------------------------------------------
-  if ((millis() - last_ctrl_update) > 1000 || ctrl_update)
-  {
+  if ((millis() - last_ctrl_update) > 1000 || ctrl_update) {
     last_ctrl_update = millis();
     ctrl_update = false;
-    ctrl_state = false;  // default OFF
-    divert_state = true; // default ON
+    ctrl_state = false;   // default OFF
+    divert_state = true;  // default ON
 
     auto now = time(nullptr);
     auto datetimenow = localtime(&now);
@@ -216,15 +208,13 @@ void loop()
     int day = datetimenow->tm_wday;
 
     // Diversion
-    if (divert_mode == "Standby")
-    {
+    if (divert_mode == "Standby") {
       // 1. Standby
       if (datenow >= standby_start && datenow < standby_stop)
         divert_state = false;
-    }
-    else if (divert_mode == "Off") // 2. Off
+    } else if (divert_mode == "Off")  // 2. Off
       divert_state = false;
-    else // 2. On (default)
+    else  // 2. On (default)
       divert_state = true;
 
       // 3. Apply
@@ -236,29 +226,23 @@ void loop()
 #endif
 
     // Override
-    if (ctrl_mode == "Timer")
-    {
+    if (ctrl_mode == "Timer") {
       // 1. Timer
-      if (((node_type == "pvrouter") && day != 0 && day != 6) ||
-          (node_type != "pvrouter"))
-      {
+      if (((node_type == "pvrouter") && day != 0 && day != 6) || (node_type != "pvrouter")) {
         if (timer_stop1 >= timer_start1 && (timenow >= timer_start1 && timenow < timer_stop1))
           ctrl_state = true;
         if (timer_stop1 < timer_start1 && (timenow >= timer_start1 || timenow < timer_stop1))
           ctrl_state = true;
       }
-      if ((node_type == "pvrouter" && (day == 0 || day == 6)) ||
-          (node_type != "pvrouter"))
-      {
+      if ((node_type == "pvrouter" && (day == 0 || day == 6)) || (node_type != "pvrouter")) {
         if (timer_stop2 >= timer_start2 && (timenow >= timer_start2 && timenow < timer_stop2))
           ctrl_state = true;
         if (timer_stop2 < timer_start2 && (timenow >= timer_start2 || timenow < timer_stop2))
           ctrl_state = true;
       }
-    }
-    else if (ctrl_mode == "On") // 2. On
+    } else if (ctrl_mode == "On")  // 2. On
       ctrl_state = true;
-    else // 2'. Off (default)
+    else  // 2'. Off (default)
       ctrl_state = false;
 
 #ifdef PVROUTER
@@ -266,24 +250,21 @@ void loop()
       mb.connect(PAC_ECS);
 
     if (mb.isConnected(PAC_ECS))
-      mb.writeHreg(PAC_ECS, TARIFF_REG, ctrl_state ? (uint16_t)0 : (uint16_t)1);
+      mb.writeHreg(PAC_ECS, TARIFF_REG, ctrl_state ? (uint16_t) 0 : (uint16_t) 1);
 
-    mb.task(); // Common local Modbus task
+    mb.task();  // Common local Modbus task
 #endif
 
     // 3. Apply
-    if (ctrl_state)
-    {
+    if (ctrl_state) {
       // ON
       digitalWrite(CONTROL_PIN, CONTROL_PIN_ON_STATE);
-    }
-    else
-    {
+    } else {
       digitalWrite(CONTROL_PIN, !CONTROL_PIN_ON_STATE);
     }
 
 #ifdef ROTATION_PIN
-    if (rotation && (timenow == 0)) // time at midnight
+    if (rotation && (timenow == 0))  // time at midnight
       digitalWrite(ROTATION_PIN, ROTATION_PIN_ON_STATE);
     else
       digitalWrite(ROTATION_PIN, !ROTATION_PIN_ON_STATE);
@@ -294,15 +275,13 @@ void loop()
 #endif
   }
   // --------------------------------------------------------------
-  if (node_type == "smartplug" && (millis() - last_pushbtn_check) > 100)
-  {
+  if (node_type == "smartplug" && (millis() - last_pushbtn_check) > 100) {
     last_pushbtn_check = millis();
 
     last_pushbtn_state = pushbtn_state;
     pushbtn_state = !digitalRead(0);
 
-    if (pushbtn_state && last_pushbtn_state && !pushbtn_action)
-    {
+    if (pushbtn_state && last_pushbtn_state && !pushbtn_action) {
       pushbtn_action = true;
       if (ctrl_mode == "On")
         ctrl_mode = "Off";
@@ -315,10 +294,9 @@ void loop()
     if (!pushbtn_state && !last_pushbtn_state)
       pushbtn_action = false;
   }
-} // end loop
+}  // end loop
 
-String getTime()
-{
+String getTime() {
   auto now = time(nullptr);
   auto datetimenow = localtime(&now);
 
@@ -334,8 +312,7 @@ String getTime()
   return hoursStr + ":" + minuteStr + ":" + secondStr;
 }
 
-String getDate()
-{
+String getDate() {
   // Based on https://github.com/PaulStoffregen/Time/blob/master/Time.cpp
   // currently assumes UTC timezone, instead of using this->_timeOffset
   auto now = time(nullptr);
@@ -344,13 +321,12 @@ String getDate()
   auto month = datetimenow->tm_mon;
   auto day = datetimenow->tm_mday;
 
-  String monthStr = ++month < 10 ? "0" + String(month) : String(month); // jan is month 1
-  String dayStr = day < 10 ? "0" + String(day) : String(day);           // day of month
+  String monthStr = ++month < 10 ? "0" + String(month) : String(month);  // jan is month 1
+  String dayStr = day < 10 ? "0" + String(day) : String(day);            // day of month
   return String(datetimenow->tm_year + 1900) + "-" + monthStr + "-" + dayStr;
 }
 
-int getDateAsInt()
-{
+int getDateAsInt() {
   // Based on https://github.com/PaulStoffregen/Time/blob/master/Time.cpp
   // currently assumes UTC timezone, instead of using this->_timeOffset
 
@@ -360,15 +336,13 @@ int getDateAsInt()
   return ((datetimenow->tm_year + 1900) * 10000) + ((datetimenow->tm_mon + 1) * 100) + datetimenow->tm_mday;
 }
 
-void event_send(String &json)
-{
+void event_send(String &json) {
   StaticJsonDocument<512> event;
   deserializeJson(event, json);
   event_send(event);
 }
 
-void event_send(JsonDocument &event)
-{
+void event_send(JsonDocument &event) {
 #ifdef ENABLE_DEBUG
   serializeJson(event, DEBUG_PORT);
   DBUGLN("");
