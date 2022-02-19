@@ -41,45 +41,37 @@
 bool emoncms_connected{false};
 bool emoncms_updated{false};
 
-unsigned long packets_sent = 0;
-unsigned long packets_success = 0;
+unsigned long packets_sent{0};
+unsigned long packets_success{0};
 
-unsigned long emoncms_connection_error_count = 0;
+unsigned long emoncms_connection_error_count{0};
 
 const char *post_path = "/input/post?";
 
-static void emoncms_result(bool success, const String &message)
-{
+static void emoncms_result(bool success, const String &message) {
   StaticJsonDocument<128> event;
 
-  if (success)
-  {
+  if (success) {
     ++packets_success;
     emoncms_connection_error_count = 0;
-  }
-  else
-  {
-    if (++emoncms_connection_error_count > 30)
-    {
+  } else {
+    if (++emoncms_connection_error_count > 30) {
       ESP.restart();
     }
   }
 
-  if (emoncms_connected != success)
-  {
+  if (emoncms_connected != success) {
     emoncms_connected = success;
-    event[F("emoncms_connected")] = (int)emoncms_connected;
+    event[F("emoncms_connected")] = (int) emoncms_connected;
     event[F("emoncms_message")] = message.substring(0, 64);
     event_send(event);
   }
 }
 
-void emoncms_publish(JsonDocument &data)
-{
+void emoncms_publish(JsonDocument &data) {
   Profile_Start(emoncms_publish);
 
-  if (config_emoncms_enabled() && !emoncms_apikey.isEmpty())
-  {
+  if (config_emoncms_enabled() && !emoncms_apikey.isEmpty()) {
     String url = emoncms_path.c_str();
     url += post_path;
     String json;
@@ -97,16 +89,11 @@ void emoncms_publish(JsonDocument &data)
 
     // Send data to Emoncms server
     String result;
-    if (emoncms_fingerprint.isEmpty())
-    {
+    if (emoncms_fingerprint.isEmpty()) {
       // HTTPS on port 443 if HTTPS fingerprint is present
       DBUGLN(F("HTTPS Enabled"));
-      result =
-          get_https(emoncms_fingerprint.c_str(), emoncms_server.c_str(), url,
-                    443);
-    }
-    else
-    {
+      result = get_https(emoncms_fingerprint.c_str(), emoncms_server.c_str(), url, 443);
+    } else {
       // Plain HTTP if other emoncms server e.g EmonPi
       DBUGLN(F("Plain old HTTP"));
       result = get_http(emoncms_server.c_str(), url);
@@ -114,27 +101,19 @@ void emoncms_publish(JsonDocument &data)
 
     const size_t capacity = JSON_OBJECT_SIZE(2) + result.length();
     DynamicJsonDocument doc(capacity);
-    if (DeserializationError::Code::Ok == deserializeJson(doc, result.c_str(), result.length()))
-    {
+    if (DeserializationError::Code::Ok == deserializeJson(doc, result.c_str(), result.length())) {
       DBUGLN(F("Got JSON"));
-      bool success = doc[F("success")]; // true
+      bool success = doc[F("success")];  // true
       emoncms_result(success, doc[F("message")]);
-    }
-    else if (result == F("ok"))
-    {
+    } else if (result == F("ok")) {
       emoncms_result(true, result);
-    }
-    else
-    {
+    } else {
       DEBUG.print(F("Emoncms error: "));
       DEBUG.println(result);
       emoncms_result(false, result);
     }
-  }
-  else
-  {
-    if (emoncms_connected)
-    {
+  } else {
+    if (emoncms_connected) {
       emoncms_result(false, String("Disabled"));
     }
   }

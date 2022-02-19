@@ -183,9 +183,9 @@ bool mqtt_connect()
   {
     DEBUG.print(F("MQTT failed: "));
     DEBUG.println(mqttclient.state());
-    return (0);
+    return false;
   }
-  return (1);
+  return true;
 }
 
 // -------------------------------------------------------------------
