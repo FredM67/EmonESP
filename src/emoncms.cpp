@@ -38,8 +38,8 @@
 #include "event.h"
 #include "urlencode.h"
 
-bool emoncms_connected = false;
-bool emoncms_updated = false;
+bool emoncms_connected{false};
+bool emoncms_updated{false};
 
 unsigned long packets_sent = 0;
 unsigned long packets_success = 0;
@@ -96,7 +96,7 @@ void emoncms_publish(JsonDocument &data)
     ++packets_sent;
 
     // Send data to Emoncms server
-    String result = "";
+    String result;
     if (emoncms_fingerprint.isEmpty())
     {
       // HTTPS on port 443 if HTTPS fingerprint is present

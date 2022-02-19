@@ -47,9 +47,9 @@
 WiFiUDP ntpUDP;
 unsigned long last_ctrl_update = 0;
 unsigned long last_pushbtn_check = 0;
-bool pushbtn_action = false;
-bool pushbtn_state = false;
-bool last_pushbtn_state = false;
+bool pushbtn_action{false};
+bool pushbtn_state{false};
+bool last_pushbtn_state{false};
 
 static uint32_t last_mem = 0;
 static uint32_t start_mem = 0;

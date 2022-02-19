@@ -52,7 +52,7 @@ StaticFileWebHandler staticFile;
 StreamSpyReader emonTxBuffer;
 StreamSpyReader debugBuffer;
 
-bool enableCors = true;
+bool enableCors{true};
 
 // Event timeouts
 unsigned long wifiRestartTime = 0;
@@ -157,9 +157,9 @@ bool isPositive(const String &str)
 
 bool isPositive(AsyncWebServerRequest *request, const char *param)
 {
-  bool paramFound = request->hasArg(param);
-  String arg = request->arg(param);
-  return paramFound && (0 == arg.length() || isPositive(arg));
+  auto paramFound = request->hasArg(param);
+  auto &arg = request->arg(param);
+  return paramFound && (arg.isEmpty() || isPositive(arg));
 }
 
 // -------------------------------------------------------------------
@@ -275,8 +275,8 @@ void handleSaveNetwork(AsyncWebServerRequest *request)
     return;
   }
 
-  String qsid = request->arg(F("ssid"));
-  String qpass = request->arg(F("pass"));
+  auto &qsid = request->arg(F("ssid"));
+  auto &qpass = request->arg(F("pass"));
 
   if (!qsid.isEmpty())
   {
@@ -340,7 +340,7 @@ void handleSaveMqtt(AsyncWebServerRequest *request)
     return;
   }
 
-  int port = 1883;
+  int port{1883};
   AsyncWebParameter *portParm = request->getParam(F("port"), true);
   DBUGVAR((uint32_t)portParm);
   if (nullptr != portParm)
@@ -381,8 +381,8 @@ void handleSaveAdmin(AsyncWebServerRequest *request)
     return;
   }
 
-  String quser = request->arg(F("user"));
-  String qpass = request->arg(F("pass"));
+  auto &quser = request->arg(F("user"));
+  auto &qpass = request->arg(F("pass"));
 
   config_save_admin(quser, qpass);
 
@@ -446,13 +446,13 @@ void handleSetVout(AsyncWebServerRequest *request)
   {
     return;
   }
-  String tmp = request->arg(F("val"));
-  int vout = tmp.toInt();
+  auto &tmp_val = request->arg(F("val"));
+  int vout = tmp_val.toInt();
 
-  tmp = request->arg(F("save"));
-  int qsave = tmp.toInt();
+  auto &tmp_save = request->arg(F("save"));
+  int qsave = tmp_save.toInt();
 
-  int save = 0;
+  int save{0};
   if (qsave == 1)
     save = 1;
 
@@ -474,14 +474,14 @@ void handleSetFlowT(AsyncWebServerRequest *request)
   {
     return;
   }
-  String tmp = request->arg(F("val"));
-  float flow = tmp.toFloat();
+  auto &tmp_val = request->arg(F("val"));
+  float flow = tmp_val.toFloat();
   int vout = (int)(flow - 7.14) / 0.0371;
 
-  tmp = request->arg(F("save"));
-  int qsave = tmp.toInt();
+  auto &tmp_save = request->arg(F("save"));
+  int qsave = tmp_save.toInt();
 
-  int save = 0;
+  int save{0};
   if (qsave == 1)
     save = 1;
 
@@ -747,7 +747,7 @@ void handleUpdate(AsyncWebServerRequest *request)
 
   t_httpUpdate_return ret = ota_http_update();
 
-  int retCode = 400;
+  int retCode{400};
   String str = "Error";
   switch (ret)
   {
@@ -884,7 +884,7 @@ void handleCtrlMode(AsyncWebServerRequest *request)
     return;
   }
 
-  String qmode = request->arg(F("mode"));
+  auto &qmode = request->arg(F("mode"));
 
   if (qmode != "On" && qmode != "Off" && qmode != "Timer")
     return;
@@ -907,7 +907,7 @@ void handleDivertMode(AsyncWebServerRequest *request)
     return;
   }
 
-  String qmode = request->arg(F("mode"));
+  auto &qmode = request->arg(F("mode"));
   if (qmode != "On" && qmode != "Off" && qmode != "Standby")
     return;
 
@@ -1015,7 +1015,7 @@ void onWsEvent(AsyncWebSocket *server, AsyncWebSocketClient *client, AwsEventTyp
   else if (type == WS_EVT_DATA)
   {
     AwsFrameInfo *info = (AwsFrameInfo *)arg;
-    String msg = "";
+    String msg;
     if (info->final && info->index == 0 && info->len == len)
     {
       // the whole message is in a single frame and we got all of it's data

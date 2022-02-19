@@ -21,7 +21,7 @@ static unsigned char h2int(char c);
 
 String urldecode(const String &str)
 {
-  String encodedString = "";
+  String encodedString;
   char c;
   char code0;
   char code1;
@@ -55,7 +55,7 @@ String urldecode(const String &str)
 
 String urlencode(const String &str)
 {
-  String encodedString = "";
+  String encodedString;
   char c;
   char code0;
   char code1;

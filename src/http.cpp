@@ -32,14 +32,14 @@
 static String get_http_internal(WiFiClient &client, const char *host, String &path, int port, bool secure)
 {
   HTTPClient http;                      // Create class for HTTP TCP connections get_http
-  
+
   DBUGF("Connecting to http%s://%s:%d%s", secure ? "s" : "", host, port, path.c_str());
 
   http.begin(client, host, port, path, secure);
   int httpCode = http.GET();
   if((httpCode > 0) && (httpCode == HTTP_CODE_OK))
   {
-    String payload = http.getString();
+    auto &payload = http.getString();
     DEBUG.println(payload);
     http.end();
     return(payload);

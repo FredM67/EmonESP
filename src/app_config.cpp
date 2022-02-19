@@ -30,51 +30,51 @@ const String node_type = NODE_TYPE;
 const String node_description = NODE_DESCRIPTION;
 int node_id = getNodeId();
 String node_name_default = node_type + String(node_id);
-String node_name = "";
-String node_describe = "";
+String node_name;
+String node_describe;
 
 // Wifi Network Strings
-String esid = "";
-String epass = "";
+String esid;
+String epass;
 
 // Web server authentication (leave blank for none)
-String www_username = "";
-String www_password = "";
+String www_username;
+String www_password;
 
 // EMONCMS SERVER strings
-String emoncms_server = "";
-String emoncms_path = "";
-String emoncms_node = "";
-String emoncms_apikey = "";
-String emoncms_fingerprint = "";
+String emoncms_server;
+String emoncms_path;
+String emoncms_node;
+String emoncms_apikey;
+String emoncms_fingerprint;
 
 // MQTT Settings
-String mqtt_server = "";
+String mqtt_server;
 int mqtt_port = 1883;
-String mqtt_topic = "";
-String mqtt_user = "";
-String mqtt_pass = "";
-String mqtt_feed_prefix = "";
+String mqtt_topic;
+String mqtt_user;
+String mqtt_pass;
+String mqtt_feed_prefix;
 
 // Timer Settings
-int timer_start1 = 0;
-int timer_stop1 = 0;
-int timer_start2 = 0;
-int timer_stop2 = 0;
-int standby_start = 0;
-int standby_stop = 0;
+int timer_start1{0};
+int timer_stop1{0};
+int timer_start2{0};
+int timer_stop2{0};
+int standby_start{0};
+int standby_stop{0};
 
-int voltage_output = 0;
+int voltage_output{0};
 
-String ctrl_mode = "Off";
-bool ctrl_update = false;
-bool ctrl_state = false;
+String ctrl_mode{"Off"};
+bool ctrl_update{false};
+bool ctrl_state{false};
 
-String divert_mode = "On";
-bool divert_update = false;
-bool divert_state = true;
+String divert_mode{"On"};
+bool divert_update{false};
+bool divert_state{true};
 
-bool rotation = false;
+bool rotation{false};
 
 // Time
 String time_zone;

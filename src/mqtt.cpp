@@ -37,11 +37,11 @@
 WiFiClient espClient;               // Create client for MQTT
 PubSubClient mqttclient(espClient); // Create client for MQTT
 
-static long nextMqttReconnectAttempt = 0;
-static unsigned long mqttRestartTime = 0;
+static long nextMqttReconnectAttempt{0};
+static unsigned long mqttRestartTime{0};
 
-int clientTimeout = 0;
-int i = 0;
+int clientTimeout{0};
+int i{0};
 
 #ifndef MQTT_CONNECT_TIMEOUT
 #define MQTT_CONNECT_TIMEOUT (5 * 1000)
@@ -53,8 +53,8 @@ int i = 0;
 static void mqtt_msg_callback(char *topic, byte *payload, unsigned int length)
 {
 
-  String topicstr = String(topic);
-  String payloadstr = String((char *)payload);
+  String topicstr{topic};
+  String payloadstr{(char *)payload};
   payloadstr = payloadstr.substring(0, length);
 
   DBUGF("Message arrived topic:[%s] payload: [%s]", topic, payload);
@@ -103,20 +103,20 @@ static void mqtt_msg_callback(char *topic, byte *payload, unsigned int length)
     DEBUG.print(F("Timer: "));
     if (payloadstr.length() == 9)
     {
-      String tstart = payloadstr.substring(0, 4);
-      String tstop = payloadstr.substring(5, 9);
+      auto tstart = payloadstr.substring(0, 4);
+      auto tstop = payloadstr.substring(5, 9);
       timer_start1 = tstart.toInt();
       timer_stop1 = tstop.toInt();
       DEBUG.println(tstart + " " + tstop);
     }
     if (payloadstr.length() == 19)
     {
-      String tstart1 = payloadstr.substring(0, 4);
-      String tstop1 = payloadstr.substring(5, 9);
+      auto tstart1 = payloadstr.substring(0, 4);
+      auto tstop1 = payloadstr.substring(5, 9);
       timer_start1 = tstart1.toInt();
       timer_stop1 = tstop1.toInt();
-      String tstart2 = payloadstr.substring(10, 14);
-      String tstop2 = payloadstr.substring(15, 19);
+      auto tstart2 = payloadstr.substring(10, 14);
+      auto tstop2 = payloadstr.substring(15, 19);
       timer_start2 = tstart2.toInt();
       timer_stop2 = tstop2.toInt();
       DEBUG.println(tstart1 + ":" + tstop1 + " " + tstart2 + ":" + tstop2);
@@ -148,7 +148,7 @@ static void mqtt_msg_callback(char *topic, byte *payload, unsigned int length)
   {
     DEBUG.println(F("State: "));
 
-    String s = "{";
+    String s{"{"};
     s += "\"ip\":\"" + ipaddress + "\",";
     // s += "\"time\":\"" + String(getTime()) + "\",";
     s += "\"ctrlmode\":\"" + String(ctrl_mode) + "\",";
@@ -170,7 +170,7 @@ bool mqtt_connect()
   DEBUG.print(F("MQTT Connecting to..."));
   DEBUG.println(mqtt_server.c_str());
 
-  String strID = String(ESP.getChipId());
+  auto strID = String(ESP.getChipId());
   if (mqttclient.connect(strID.c_str(), mqtt_user.c_str(), mqtt_pass.c_str()))
   { // Attempt to connect
     DEBUG.println(F("MQTT connected"));
@@ -223,7 +223,7 @@ void mqtt_publish(JsonDocument &data)
   {
     String topic = mqtt_topic + "/";
     topic += kv.key().c_str();
-    String val = kv.value().as<String>();
+    auto val = kv.value().as<String>();
     mqttclient.publish(topic.c_str(), val.c_str());
   }
 

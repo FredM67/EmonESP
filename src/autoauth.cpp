@@ -30,7 +30,7 @@
 #include <WiFiUdp.h>
 
 WiFiUDP Udp;
-unsigned int localUdpPort = 5005;  // local port to listen on
+unsigned int localUdpPort{5005};  // local port to listen on
 char incomingPacket[255];  // buffer for incoming packets
 
 byte mqtt_auth_transfer_flag = 0;
@@ -43,12 +43,12 @@ void auth_request() {
 
     // Fetch emoncms mqtt broker credentials
     String url = F("/emoncms/device/auth/request.json");
-    String result = "";
-    String mqtt_username = "";
-    String mqtt_password = "";
-    String mqtt_basetopic = "";
-    String mqtt_portnum = "";
-    int stringpart = 0;
+    String result;
+    String mqtt_username;
+    String mqtt_password;
+    String mqtt_basetopic;
+    String mqtt_portnum;
+    int stringpart{0};
 
     // This needs to be done with an encrypted request otherwise credentials are shared as plain text
     result = get_http(mqtt_server.c_str(), url);

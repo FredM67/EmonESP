@@ -100,7 +100,7 @@
 #define EEPROM_TIME_OFFSET_START EEPROM_VOLTAGE_OUTPUT_END
 #define EEPROM_TIME_OFFSET_END (EEPROM_TIME_OFFSET_START + EEPROM_TIME_OFFSET_SIZE)
 
-int read_offset = 0;
+int read_offset{0};
 
 void EEPROM_read_string(int start, int count, String &val)
 {

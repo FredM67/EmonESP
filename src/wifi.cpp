@@ -38,14 +38,14 @@ const byte DNS_PORT = 53;
 const char* softAP_password = "";
 IPAddress apIP(192, 168, 4, 1);
 IPAddress netMsk(255, 255, 255, 0);
-int apClients = 0;
+int apClients{0};
 
 // Wifi Network Strings
-String connected_network = "";
-String ipaddress = "";
+String connected_network;
+String ipaddress;
 
-int client_disconnects = 0;
-bool client_retry = false;
+int client_disconnects{0};
+bool client_retry{false};
 unsigned long client_retry_time = 0;
 
 #ifdef WIFI_LED
@@ -87,7 +87,7 @@ unsigned long wifiLedTimeOut = millis();
 
 int wifiButtonState = HIGH;
 unsigned long wifiButtonTimeOut = millis();
-bool apMessage = false;
+bool apMessage{false};
 
 // -------------------------------------------------------------------
 // Start Access Point
